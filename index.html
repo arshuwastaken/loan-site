@@ -7,44 +7,48 @@
         body {
             margin: 0;
             font-family: Arial;
-            background: #0f172a;
+            background: linear-gradient(135deg, #0f172a, #020617);
             color: white;
         }
         .header {
             padding: 20px;
-            background: #020617;
             text-align: center;
-            font-size: 24px;
+            font-size: 26px;
             font-weight: bold;
         }
         .hero {
             text-align: center;
-            padding: 50px 20px;
+            padding: 40px 20px;
         }
         .hero h1 {
-            font-size: 40px;
+            font-size: 38px;
         }
         .box {
             background: #1e293b;
-            padding: 20px;
+            padding: 25px;
             margin: 20px auto;
-            width: 300px;
-            border-radius: 10px;
+            width: 320px;
+            border-radius: 12px;
             text-align: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.4);
         }
         input {
             width: 90%;
-            padding: 10px;
+            padding: 12px;
             margin: 8px;
-            border-radius: 5px;
+            border-radius: 6px;
             border: none;
         }
         button {
-            padding: 10px 20px;
+            padding: 12px 25px;
             background: #22c55e;
             border: none;
-            border-radius: 5px;
+            border-radius: 6px;
             cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #16a34a;
         }
         .footer {
             text-align: center;
@@ -60,8 +64,8 @@
 <div class="header">QuickLoan 💰</div>
 
 <div class="hero">
-    <h1>Instant Loan Assistance</h1>
-    <p>Fast • Simple • Secure</p>
+    <h1>Get Loan Assistance Easily</h1>
+    <p>Fast Approval • Trusted Help • Simple Process</p>
 </div>
 
 <div class="box">
@@ -78,7 +82,7 @@
 
 <script>
 function apply(){
-    alert("Application submitted!");
+    alert("Application submitted! We will contact you soon.");
 }
 </script>
 
