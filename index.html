@@ -4,7 +4,6 @@
     <title>Star Choice Finserv</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Font -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
@@ -13,70 +12,62 @@
             font-family: 'Poppins', sans-serif;
             color: white;
             overflow: hidden;
-            background: url('bg.png');
-            background-size: cover;
-            background-position: center;
+            background: url('bg.png') center/cover no-repeat;
         }
 
-        /* DARK OVERLAY */
         body::after {
             content: "";
             position: fixed;
-            width: 100%;
-            height: 100%;
+            inset: 0;
             background: rgba(0,0,0,0.5);
-            top: 0;
-            left: 0;
             z-index: -2;
         }
 
-        /* SNOW CANVAS */
         canvas {
             position: fixed;
-            top: 0;
-            left: 0;
+            inset: 0;
             z-index: -1;
         }
 
         .center {
             height: 100vh;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
         }
 
         h1 {
             font-size: 32px;
-            margin-bottom: 40px;
             font-weight: 600;
         }
 
-        /* BUTTON CONTAINER */
+        /* BUTTON BAR */
         .btn-box {
+            position: fixed;
+            bottom: 50px;
+            left: 0;
             width: 100%;
             display: flex;
             justify-content: space-between;
-            padding: 0 40px;
-            position: absolute;
-            bottom: 80px;
+            padding: 0 25px;
+            box-sizing: border-box;
         }
 
-        /* TRANSPARENT BUTTONS */
         .btn {
-            padding: 14px 30px;
+            padding: 14px 26px;
             border: 2px solid white;
-            border-radius: 8px;
+            border-radius: 10px;
             font-size: 15px;
             cursor: pointer;
             background: transparent;
             color: white;
             transition: 0.3s;
+            backdrop-filter: blur(5px);
         }
 
         .btn:hover {
-            background: rgba(255,255,255,0.1);
-            transform: translateY(-3px);
+            background: rgba(255,255,255,0.12);
+            transform: translateY(-2px);
         }
 
         .btn:active {
@@ -88,14 +79,12 @@
 
 <body>
 
-<!-- SNOW -->
 <canvas id="snow"></canvas>
 
 <div class="center">
     <h1>၊|Star Choice Finserv🌐</h1>
 </div>
 
-<!-- LEFT RIGHT BUTTONS -->
 <div class="btn-box">
     <button class="btn" onclick="goApply()">Apply For Loan</button>
     <button class="btn" onclick="goContact()">Contact Us</button>
@@ -105,21 +94,25 @@
 function goApply(){ window.location.href = "apply.html"; }
 function goContact(){ window.location.href = "contact.html"; }
 
-// SNOW EFFECT
+/* SNOW FIXED */
 const canvas = document.getElementById("snow");
 const ctx = canvas.getContext("2d");
 
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+function resize(){
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
 
 let snowflakes = [];
 
-for(let i=0;i<100;i++){
+for(let i=0;i<120;i++){
     snowflakes.push({
         x: Math.random()*canvas.width,
         y: Math.random()*canvas.height,
         r: Math.random()*3+1,
-        d: Math.random()*1
+        d: Math.random()*1.5
     });
 }
 
@@ -128,8 +121,7 @@ function drawSnow(){
     ctx.fillStyle = "white";
     ctx.beginPath();
 
-    for(let i=0;i<snowflakes.length;i++){
-        let f = snowflakes[i];
+    for(let f of snowflakes){
         ctx.moveTo(f.x,f.y);
         ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);
     }
@@ -139,8 +131,7 @@ function drawSnow(){
 }
 
 function moveSnow(){
-    for(let i=0;i<snowflakes.length;i++){
-        let f = snowflakes[i];
+    for(let f of snowflakes){
         f.y += f.d;
         if(f.y > canvas.height){
             f.y = 0;
