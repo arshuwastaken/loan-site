@@ -118,9 +118,8 @@
 </div>
 
 <script>
-    const ADMIN_CODE = "123456"; // Aapka 6 digit code
+    const ADMIN_CODE = "123456"; 
 
-    // Website khulte hi check karega agar admin pehle se logged-in hai
     window.onload = function() {
         if (localStorage.getItem("isAdmin") === "true") {
             showAdminFeatures();
@@ -135,7 +134,7 @@
     function promptAdmin() {
         let input = prompt("Enter 6-digit Admin Code:");
         if (input === ADMIN_CODE) {
-            localStorage.setItem("isAdmin", "true"); // Data save ho gaya
+            localStorage.setItem("isAdmin", "true");
             showAdminFeatures();
             alert("Admin Access Granted!");
         } else {
@@ -149,14 +148,15 @@
     }
 
     function signOutAdmin() {
-        localStorage.removeItem("isAdmin"); // Data clear ho gaya
+        localStorage.removeItem("isAdmin");
         document.getElementById("adminMenu").style.display = "none";
         document.getElementById("grantBtn").style.display = "block";
         alert("Signed out as Admin.");
     }
 
     function viewApplications() {
-        alert("Loan Applications:\n- Name: Rahul, Amount: 50,000\n- Name: Priya, Amount: 1,00,000");
+        // Aapki Google Sheet ka URL
+        window.open("https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit", "_blank");
     }
 
     function goApply(){ window.location.href = "apply.html"; }
