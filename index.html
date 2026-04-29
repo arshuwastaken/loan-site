@@ -3,7 +3,6 @@
 <head>
     <title>Star Choice Finserv</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
@@ -13,6 +12,11 @@
             color: white;
             overflow: hidden;
             background: url('bg.png') center/cover no-repeat;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
         body::after {
@@ -29,29 +33,22 @@
             z-index: -1;
         }
 
-        /* TEXT CENTER (TOP AREA) */
-        .center {
-            height: 70vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+        /* Container for content */
+        .content-container {
             text-align: center;
         }
 
         h1 {
             font-size: 32px;
             font-weight: 600;
+            margin-bottom: 20px;
         }
 
-        /* BUTTON BAR LEFT / RIGHT */
+        /* Buttons now sit inside the flow under the text */
         .btn-box {
-            position: fixed;
-            bottom: 60px;
-            width: 100%;
             display: flex;
-            justify-content: space-between;
-            padding: 0 40px;
-            box-sizing: border-box;
+            gap: 20px; /* Space between buttons */
+            justify-content: center;
         }
 
         .btn {
@@ -76,16 +73,9 @@
         }
 
         @media (max-width: 600px) {
-            .btn-box {
-                padding: 0 20px;
-                bottom: 40px;
-            }
-
-            h1 {
-                font-size: 24px;
-            }
+            h1 { font-size: 24px; }
+            .btn { padding: 10px 16px; font-size: 13px; }
         }
-
     </style>
 </head>
 
@@ -93,66 +83,62 @@
 
 <canvas id="snow"></canvas>
 
-<div class="center">
+<div class="content-container">
     <h1>၊|Star Choice Finserv🌐</h1>
-</div>
-
-<div class="btn-box">
-    <button class="btn" onclick="goApply()">Apply For Loan</button>
-    <button class="btn" onclick="goContact()">Contact Us</button>
+    
+    <div class="btn-box">
+        <button class="btn" onclick="goApply()">💰 Apply For Loan</button>
+        <button class="btn" onclick="goContact()">📞 Contact Us</button>
+    </div>
 </div>
 
 <script>
-function goApply(){ window.location.href = "apply.html"; }
-function goContact(){ window.location.href = "contact.html"; }
+    function goApply(){ window.location.href = "apply.html"; }
+    function goContact(){ window.location.href = "contact.html"; }
 
-/* SNOW */
-const canvas = document.getElementById("snow");
-const ctx = canvas.getContext("2d");
+    /* SNOW SCRIPT REMAINS THE SAME */
+    const canvas = document.getElementById("snow");
+    const ctx = canvas.getContext("2d");
 
-function resize(){
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-resize();
-window.addEventListener("resize", resize);
+    function resize(){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
 
-let snowflakes = [];
-
-for(let i=0;i<120;i++){
-    snowflakes.push({
-        x: Math.random()*canvas.width,
-        y: Math.random()*canvas.height,
-        r: Math.random()*3+1,
-        d: Math.random()*1.5
-    });
-}
-
-function drawSnow(){
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle = "white";
-    ctx.beginPath();
-
-    for(let f of snowflakes){
-        ctx.moveTo(f.x,f.y);
-        ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);
+    let snowflakes = [];
+    for(let i=0;i<120;i++){
+        snowflakes.push({
+            x: Math.random()*canvas.width,
+            y: Math.random()*canvas.height,
+            r: Math.random()*3+1,
+            d: Math.random()*1.5
+        });
     }
 
-    ctx.fill();
-    moveSnow();
-}
+    function drawSnow(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        for(let f of snowflakes){
+            ctx.moveTo(f.x,f.y);
+            ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);
+        }
+        ctx.fill();
+        moveSnow();
+    }
 
-function moveSnow(){
-    for(let f of snowflakes){
-        f.y += f.d;
-        if(f.y > canvas.height){
-            f.y = 0;
-            f.x = Math.random()*canvas.width;
+    function moveSnow(){
+        for(let f of snowflakes){
+            f.y += f.d;
+            if(f.y > canvas.height){
+                f.y = 0;
+                f.x = Math.random()*canvas.width;
+            }
         }
     }
-}
-
-setInterval(drawSnow, 25);
+    setInterval(drawSnow, 25);
 </script>
 
 </body>
