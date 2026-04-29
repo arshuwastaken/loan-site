@@ -4,9 +4,10 @@
     <title>Star Choice Finserv</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
 
     <style>
-        body { margin: 0; font-family: 'Poppins', sans-serif; color: white; overflow: hidden; background: url('bg.png') center/cover no-repeat; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        body { margin: 0; font-family: 'Poppins', sans-serif; color: white; overflow: hidden; background: url('bg.png') center/cover no-repeat; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: background 0.5s; }
         body::after { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: -2; }
         canvas { position: fixed; inset: 0; z-index: -1; }
         .menu-icon { position: absolute; top: 20px; left: 20px; font-size: 30px; cursor: pointer; z-index: 100; }
@@ -15,21 +16,19 @@
         .sidebar a { padding: 15px 25px; text-decoration: none; font-size: 18px; color: white; display: block; transition: 0.3s; }
         .sidebar a:hover { color: #22c55e; padding-left: 35px; }
 
-        /* Professional Modal */
-        #adminModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        #adminModal, #editModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: #1e293b; padding: 25px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 300px; }
         .modal-content input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
         .modal-btn { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; margin: 5px; }
 
-        /* Message Box */
-        #messageBox { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; display: none; z-index: 2000; animation: fadeIn 0.5s; }
-
+        #messageBox { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; display: none; z-index: 2000; }
         .content-container { text-align: center; }
-        .logo { width: 250px; height: auto; margin-bottom: 25px; }
+        .logo { width: 250px; height: auto; margin-bottom: 25px; cursor: pointer; }
         h1 { font-size: 32px; font-weight: 600; margin-bottom: 30px; }
-        .btn-box { display: flex; gap: 20px; justify-content: center; }
-        .btn { padding: 14px 26px; border: 2px solid white; border-radius: 10px; cursor: pointer; background: transparent; color: white; transition: 0.3s; backdrop-filter: blur(5px); }
+        .btn-box { display: flex; gap: 20px; justify-content: center; padding: 20px; }
+        .btn { padding: 14px 26px; border: 2px solid white; border-radius: 10px; cursor: pointer; background: transparent; color: white; transition: 0.3s; backdrop-filter: blur(5px); user-select: none; }
         .btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
+        .admin-edit-active { border: 2px dashed #f1c40f !important; }
     </style>
 </head>
 
@@ -38,86 +37,89 @@
 <canvas id="snow"></canvas>
 <div id="messageBox"></div>
 
-<div id="adminModal">
-    <div class="modal-content">
-        <h3>Enter Admin Code</h3>
-        <input type="password" id="adminInput" maxlength="6" placeholder="6-digit code">
-        <br>
-        <button class="modal-btn" onclick="checkAdmin()" style="background:#22c55e; color:white;">Submit</button>
-        <button class="modal-btn" onclick="document.getElementById('adminModal').style.display='none'" style="background:#ef4444; color:white;">Cancel</button>
-    </div>
-</div>
+<div id="adminModal"><div class="modal-content"><h3>Enter Admin Code</h3><input type="password" id="adminInput" placeholder="6-digit code"><br><button class="modal-btn" onclick="checkAdmin()" style="background:#22c55e;">Submit</button><button class="modal-btn" onclick="document.getElementById('adminModal').style.display='none'" style="background:#ef4444;">Cancel</button></div></div>
+<div id="editModal"><div class="modal-content"><h3 id="modalTitle">Change Item</h3><input type="text" id="urlInput" placeholder="Paste URL here"><br><button class="modal-btn" onclick="saveSettings()" style="background:#22c55e;">Save</button><button class="modal-btn" onclick="document.getElementById('editModal').style.display='none'" style="background:#ef4444;">Cancel</button></div></div>
 
 <div class="menu-icon" onclick="toggleNav()">&#9776;</div>
-
 <div id="mySidebar" class="sidebar">
     <a href="#">Terms and Policy</a>
     <a href="#">Applied Loans</a>
-    <a href="#">Previous Loan History</a>
     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 20px;">
     <a href="#" id="grantBtn" onclick="promptAdmin()">Grant Admin</a>
     <div id="adminMenu" style="display:none;">
-        <a href="#" onclick="viewApplications()" style="color: #22c55e;">📋 View Loan Applications</a>
-        <a href="#" onclick="signOutAdmin()" style="color: #ff4757;">🚪 Sign Out as Admin</a>
+        <a href="#" onclick="viewApplications()" style="color: #22c55e;">📋 View Applications</a>
+        <a href="#" onclick="toggleDrag()" style="color: #f1c40f;">🖱️ Toggle Drag & Drop</a>
+        <a href="#" onclick="openEdit('logo')" style="color: #3498db;">🖼️ Change Logo</a>
+        <a href="#" onclick="openEdit('bg')" style="color: #f1c40f;">🎨 Change Background</a>
+        <a href="#" onclick="addNewBtn()" style="color: #ffffff;">➕ Add New Button</a>
+        <a href="#" onclick="signOutAdmin()" style="color: #ff4757;">🚪 Sign Out</a>
     </div>
 </div>
 
 <div class="content-container">
-    <img src="logo.png" alt="Star Choice Logo" class="logo">
+    <img src="logo.png" alt="Star Choice Logo" class="logo" id="mainLogo">
     <h1>Star Choice Finserv🌐</h1>
-    <div class="btn-box">
+    <div class="btn-box" id="btnContainer">
         <button class="btn" onclick="goApply()">💰 Apply For Loan</button>
         <button class="btn" onclick="goContact()">📞 Contact Us</button>
     </div>
 </div>
 
 <script>
-    const ADMIN_CODE = "201413"; 
+    const ADMIN_CODE = "201413";
+    let editType = '';
+    let sortable = new Sortable(document.getElementById('btnContainer'), { animation: 150, disabled: true });
 
     window.onload = function() {
         if (localStorage.getItem("isAdmin") === "true") showAdminFeatures();
+        if (localStorage.getItem("siteLogo")) document.getElementById('mainLogo').src = localStorage.getItem("siteLogo");
+        if (localStorage.getItem("siteBackground")) document.body.style.background = `url('${localStorage.getItem("siteBackground")}') center/cover no-repeat`;
     };
 
-    function toggleNav() {
-        var sidebar = document.getElementById("mySidebar");
-        sidebar.style.width = sidebar.style.width === "250px" ? "0" : "250px";
+    function toggleDrag() {
+        sortable.option("disabled", !sortable.option("disabled"));
+        showMsg(sortable.option("disabled") ? "Drag & Drop OFF" : "Drag & Drop ON", "#f1c40f");
+        document.getElementById('btnContainer').classList.toggle('admin-edit-active');
     }
 
-    function promptAdmin() { document.getElementById("adminModal").style.display = "flex"; }
+    function openEdit(type) {
+        editType = type;
+        document.getElementById('modalTitle').innerText = (type === 'logo') ? "Change Logo URL" : "Change Background URL";
+        document.getElementById('editModal').style.display = "flex";
+    }
 
-    function checkAdmin() {
-        let input = document.getElementById("adminInput").value;
-        if (input === ADMIN_CODE) {
-            localStorage.setItem("isAdmin", "true");
-            showAdminFeatures();
-            showMsg("Admin Access Granted!", "#22c55e");
-            document.getElementById("adminModal").style.display = "none";
-            document.getElementById("adminInput").value = "";
+    function saveSettings() {
+        let url = document.getElementById('urlInput').value;
+        if(editType === 'logo') {
+            document.getElementById('mainLogo').src = url;
+            localStorage.setItem("siteLogo", url);
         } else {
-            showMsg("Invalid Code!", "#ef4444");
+            document.body.style.background = `url('${url}') center/cover no-repeat`;
+            localStorage.setItem("siteBackground", url);
+        }
+        document.getElementById('editModal').style.display = "none";
+        showMsg("Updated Successfully!", "#22c55e");
+    }
+
+    function addNewBtn() {
+        let name = prompt("Enter Button Name:");
+        let link = prompt("Enter Link:");
+        if(name && link) {
+            let btn = document.createElement('button');
+            btn.className = 'btn';
+            btn.innerText = name;
+            btn.onclick = () => window.location.href = link;
+            document.getElementById('btnContainer').appendChild(btn);
         }
     }
 
-    function showAdminFeatures() {
-        document.getElementById("adminMenu").style.display = "block";
-        document.getElementById("grantBtn").style.display = "none";
-    }
-
-    function signOutAdmin() {
-        localStorage.removeItem("isAdmin");
-        document.getElementById("adminMenu").style.display = "none";
-        document.getElementById("grantBtn").style.display = "block";
-        showMsg("Signed out as Admin.", "#ff4757");
-    }
-
-    function showMsg(text, color) {
-        var msgBox = document.getElementById('messageBox');
-        msgBox.innerText = text;
-        msgBox.style.backgroundColor = color;
-        msgBox.style.display = 'block';
-        setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
-    }
-
+    // Puraane Functions (PromptAdmin, CheckAdmin, etc wahi hain)
+    function toggleNav() { var s = document.getElementById("mySidebar"); s.style.width = s.style.width === "250px" ? "0" : "250px"; }
+    function promptAdmin() { document.getElementById("adminModal").style.display = "flex"; }
+    function checkAdmin() { if(document.getElementById("adminInput").value === ADMIN_CODE) { localStorage.setItem("isAdmin", "true"); showAdminFeatures(); document.getElementById("adminModal").style.display = "none"; showMsg("Admin Access Granted!", "#22c55e"); } else showMsg("Invalid!", "#ef4444"); }
+    function showAdminFeatures() { document.getElementById("adminMenu").style.display = "block"; document.getElementById("grantBtn").style.display = "none"; }
+    function signOutAdmin() { localStorage.removeItem("isAdmin"); location.reload(); }
+    function showMsg(t, c) { var m = document.getElementById('messageBox'); m.innerText = t; m.style.backgroundColor = c; m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 3000); }
     function viewApplications() { window.open("https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit", "_blank"); }
     function goApply(){ window.location.href = "apply.html"; }
     function goContact(){ window.location.href = "contact.html"; }
@@ -130,20 +132,8 @@
     window.addEventListener("resize", resize);
     let snowflakes = [];
     for(let i=0;i<120;i++){ snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*3+1, d: Math.random()*1.5 }); }
-    function drawSnow(){
-        ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = "white";
-        ctx.beginPath();
-        for(let f of snowflakes){ ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true); }
-        ctx.fill();
-        moveSnow();
-    }
-    function moveSnow(){
-        for(let f of snowflakes){
-            f.y += f.d;
-            if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; }
-        }
-    }
+    function drawSnow(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "white"; ctx.beginPath(); for(let f of snowflakes){ ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true); } ctx.fill(); moveSnow(); }
+    function moveSnow(){ for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; } } }
     setInterval(drawSnow, 25);
 </script>
 </body>
