@@ -6,81 +6,29 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        body {
-            margin: 0;
-            font-family: 'Poppins', sans-serif;
-            color: white;
-            overflow: hidden;
-            background: url('bg.png') center/cover no-repeat;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        body::after {
-            content: "";
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.5);
-            z-index: -2;
-        }
-
+        body { margin: 0; font-family: 'Poppins', sans-serif; color: white; overflow: hidden; background: url('bg.png') center/cover no-repeat; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        body::after { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: -2; }
         canvas { position: fixed; inset: 0; z-index: -1; }
-
-        .menu-icon {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 30px;
-            cursor: pointer;
-            z-index: 100;
-        }
-
-        .sidebar {
-            height: 100%;
-            width: 0;
-            position: fixed;
-            top: 0;
-            left: 0;
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(15px);
-            overflow-x: hidden;
-            transition: 0.5s;
-            padding-top: 80px;
-            z-index: 50;
-            border-right: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .sidebar a {
-            padding: 15px 25px;
-            text-decoration: none;
-            font-size: 18px;
-            color: white;
-            display: block;
-            transition: 0.3s;
-        }
-
+        .menu-icon { position: absolute; top: 20px; left: 20px; font-size: 30px; cursor: pointer; z-index: 100; }
+        
+        .sidebar { height: 100%; width: 0; position: fixed; top: 0; left: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); overflow-x: hidden; transition: 0.5s; padding-top: 80px; z-index: 50; border-right: 1px solid rgba(255,255,255,0.1); }
+        .sidebar a { padding: 15px 25px; text-decoration: none; font-size: 18px; color: white; display: block; transition: 0.3s; }
         .sidebar a:hover { color: #22c55e; padding-left: 35px; }
+
+        /* Professional Modal */
+        #adminModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        .modal-content { background: #1e293b; padding: 25px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 300px; }
+        .modal-content input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
+        .modal-btn { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; margin: 5px; }
+
+        /* Message Box */
+        #messageBox { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; display: none; z-index: 2000; animation: fadeIn 0.5s; }
 
         .content-container { text-align: center; }
         .logo { width: 250px; height: auto; margin-bottom: 25px; }
         h1 { font-size: 32px; font-weight: 600; margin-bottom: 30px; }
         .btn-box { display: flex; gap: 20px; justify-content: center; }
-
-        .btn {
-            padding: 14px 26px;
-            border: 2px solid white;
-            border-radius: 10px;
-            font-size: 15px;
-            cursor: pointer;
-            background: transparent;
-            color: white;
-            transition: 0.3s;
-            backdrop-filter: blur(5px);
-        }
-
+        .btn { padding: 14px 26px; border: 2px solid white; border-radius: 10px; cursor: pointer; background: transparent; color: white; transition: 0.3s; backdrop-filter: blur(5px); }
         .btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
     </style>
 </head>
@@ -88,6 +36,17 @@
 <body>
 
 <canvas id="snow"></canvas>
+<div id="messageBox"></div>
+
+<div id="adminModal">
+    <div class="modal-content">
+        <h3>Enter Admin Code</h3>
+        <input type="password" id="adminInput" maxlength="6" placeholder="6-digit code">
+        <br>
+        <button class="modal-btn" onclick="checkAdmin()" style="background:#22c55e; color:white;">Submit</button>
+        <button class="modal-btn" onclick="document.getElementById('adminModal').style.display='none'" style="background:#ef4444; color:white;">Cancel</button>
+    </div>
+</div>
 
 <div class="menu-icon" onclick="toggleNav()">&#9776;</div>
 
@@ -95,22 +54,17 @@
     <a href="#">Terms and Policy</a>
     <a href="#">Applied Loans</a>
     <a href="#">Previous Loan History</a>
-    
     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 20px;">
-    
     <a href="#" id="grantBtn" onclick="promptAdmin()">Grant Admin</a>
-    
     <div id="adminMenu" style="display:none;">
         <a href="#" onclick="viewApplications()" style="color: #22c55e;">📋 View Loan Applications</a>
         <a href="#" onclick="signOutAdmin()" style="color: #ff4757;">🚪 Sign Out as Admin</a>
-        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 20px;">
     </div>
 </div>
 
 <div class="content-container">
     <img src="logo.png" alt="Star Choice Logo" class="logo">
     <h1>Star Choice Finserv🌐</h1>
-    
     <div class="btn-box">
         <button class="btn" onclick="goApply()">💰 Apply For Loan</button>
         <button class="btn" onclick="goContact()">📞 Contact Us</button>
@@ -121,9 +75,7 @@
     const ADMIN_CODE = "201413"; 
 
     window.onload = function() {
-        if (localStorage.getItem("isAdmin") === "true") {
-            showAdminFeatures();
-        }
+        if (localStorage.getItem("isAdmin") === "true") showAdminFeatures();
     };
 
     function toggleNav() {
@@ -131,14 +83,18 @@
         sidebar.style.width = sidebar.style.width === "250px" ? "0" : "250px";
     }
 
-    function promptAdmin() {
-        let input = prompt("Enter 6-digit Admin Code:");
+    function promptAdmin() { document.getElementById("adminModal").style.display = "flex"; }
+
+    function checkAdmin() {
+        let input = document.getElementById("adminInput").value;
         if (input === ADMIN_CODE) {
             localStorage.setItem("isAdmin", "true");
             showAdminFeatures();
-            alert("Admin Access Granted!");
+            showMsg("Admin Access Granted!", "#22c55e");
+            document.getElementById("adminModal").style.display = "none";
+            document.getElementById("adminInput").value = "";
         } else {
-            alert("Invalid Code!");
+            showMsg("Invalid Code!", "#ef4444");
         }
     }
 
@@ -151,14 +107,18 @@
         localStorage.removeItem("isAdmin");
         document.getElementById("adminMenu").style.display = "none";
         document.getElementById("grantBtn").style.display = "block";
-        alert("Signed out as Admin.");
+        showMsg("Signed out as Admin.", "#ff4757");
     }
 
-    function viewApplications() {
-        // Aapki Google Sheet ka URL
-        window.open("https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit", "_blank");
+    function showMsg(text, color) {
+        var msgBox = document.getElementById('messageBox');
+        msgBox.innerText = text;
+        msgBox.style.backgroundColor = color;
+        msgBox.style.display = 'block';
+        setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
     }
 
+    function viewApplications() { window.open("https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit", "_blank"); }
     function goApply(){ window.location.href = "apply.html"; }
     function goContact(){ window.location.href = "contact.html"; }
 
@@ -169,9 +129,7 @@
     resize();
     window.addEventListener("resize", resize);
     let snowflakes = [];
-    for(let i=0;i<120;i++){
-        snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*3+1, d: Math.random()*1.5 });
-    }
+    for(let i=0;i<120;i++){ snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*3+1, d: Math.random()*1.5 }); }
     function drawSnow(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         ctx.fillStyle = "white";
@@ -188,6 +146,5 @@
     }
     setInterval(drawSnow, 25);
 </script>
-
 </body>
 </html>
