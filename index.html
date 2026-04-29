@@ -29,11 +29,13 @@
             z-index: -1;
         }
 
+        /* TEXT CENTER (TOP AREA) */
         .center {
-            height: 100vh;
+            height: 70vh;
             display: flex;
             justify-content: center;
             align-items: center;
+            text-align: center;
         }
 
         h1 {
@@ -41,15 +43,14 @@
             font-weight: 600;
         }
 
-        /* BUTTON BAR */
+        /* BUTTON BAR LEFT / RIGHT */
         .btn-box {
             position: fixed;
-            bottom: 50px;
-            left: 0;
+            bottom: 60px;
             width: 100%;
             display: flex;
             justify-content: space-between;
-            padding: 0 25px;
+            padding: 0 40px;
             box-sizing: border-box;
         }
 
@@ -74,6 +75,17 @@
             transform: scale(0.95);
         }
 
+        @media (max-width: 600px) {
+            .btn-box {
+                padding: 0 20px;
+                bottom: 40px;
+            }
+
+            h1 {
+                font-size: 24px;
+            }
+        }
+
     </style>
 </head>
 
@@ -94,7 +106,7 @@
 function goApply(){ window.location.href = "apply.html"; }
 function goContact(){ window.location.href = "contact.html"; }
 
-/* SNOW FIXED */
+/* SNOW */
 const canvas = document.getElementById("snow");
 const ctx = canvas.getContext("2d");
 
