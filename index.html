@@ -38,6 +38,13 @@
             text-align: center;
         }
 
+        /* Logo Styling */
+        .logo {
+            width: 150px; /* You can adjust this size */
+            height: auto;
+            margin-bottom: 20px;
+        }
+
         h1 {
             font-size: 32px;
             font-weight: 600;
@@ -75,6 +82,7 @@
         @media (max-width: 600px) {
             h1 { font-size: 24px; }
             .btn { padding: 10px 16px; font-size: 13px; }
+            .logo { width: 120px; }
         }
     </style>
 </head>
@@ -84,7 +92,9 @@
 <canvas id="snow"></canvas>
 
 <div class="content-container">
-    <h1>၊|Star Choice Finserv🌐</h1>
+    <img src="logo.png" alt="Star Choice Logo" class="logo">
+    
+    <h1>Star Choice Finserv🌐</h1>
     
     <div class="btn-box">
         <button class="btn" onclick="goApply()">💰 Apply For Loan</button>
@@ -96,7 +106,7 @@
     function goApply(){ window.location.href = "apply.html"; }
     function goContact(){ window.location.href = "contact.html"; }
 
-    /* SNOW SCRIPT REMAINS THE SAME */
+    /* SNOW SCRIPT */
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
 
