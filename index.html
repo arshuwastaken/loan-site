@@ -4,15 +4,31 @@
     <title>QuickLoan</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+
     <!-- Favicon -->
     <link rel="icon" href="logo.png">
 
     <style>
         body { 
             margin: 0; 
-            font-family: Arial; 
+            font-family: 'Poppins', sans-serif;
             color: white; 
             overflow: hidden; 
+        }
+
+        /* LOADING SCREEN */
+        #loader {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            background: #020617;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            font-size: 24px;
         }
 
         body::before {
@@ -24,19 +40,15 @@
                         url('bg.jpg');
             background-size: cover;
             background-position: center;
+            z-index: -2;
+        }
+
+        /* SNOW CANVAS */
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
             z-index: -1;
-        }
-
-        /* ANIMATIONS */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
         }
 
         .center {
@@ -48,29 +60,34 @@
             animation: fadeIn 1s ease-in-out;
         }
 
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .logo {
-            width: 80px;
-            margin-bottom: 15px;
-            animation: float 3s ease-in-out infinite;
+            width: 70px;
+            margin-bottom: 10px;
         }
 
         h1 { 
-            margin-bottom: 30px; 
-            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+            margin-bottom: 25px; 
+            font-weight: 500;
+            letter-spacing: 1px;
         }
 
         .btn {
-            padding: 15px 30px;
+            padding: 14px 28px;
             margin: 10px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 15px;
             cursor: pointer;
             transition: 0.3s;
         }
 
         .btn:hover {
-            transform: scale(1.1);
+            transform: translateY(-3px);
         }
 
         .btn:active {
@@ -85,9 +102,14 @@
 
 <body>
 
+<!-- LOADER -->
+<div id="loader">Loading...</div>
+
+<!-- SNOW -->
+<canvas id="snow"></canvas>
+
 <div class="center">
     <img src="logo.png" class="logo">
-
     <h1>Prabhat Loan Services 💰</h1>
 
     <button class="btn green" onclick="goApply()">Apply For Loan</button>
@@ -95,8 +117,60 @@
 </div>
 
 <script>
+// PAGE LOAD
+window.onload = function(){
+    document.getElementById("loader").style.display = "none";
+}
+
+// NAVIGATION
 function goApply(){ window.location.href = "apply.html"; }
 function goContact(){ window.location.href = "contact.html"; }
+
+// SNOW EFFECT
+const canvas = document.getElementById("snow");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let snowflakes = [];
+
+for(let i=0;i<100;i++){
+    snowflakes.push({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        r: Math.random()*4+1,
+        d: Math.random()*1
+    });
+}
+
+function drawSnow(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+
+    for(let i=0;i<snowflakes.length;i++){
+        let f = snowflakes[i];
+        ctx.moveTo(f.x,f.y);
+        ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);
+    }
+
+    ctx.fill();
+    moveSnow();
+}
+
+function moveSnow(){
+    for(let i=0;i<snowflakes.length;i++){
+        let f = snowflakes[i];
+        f.y += f.d;
+        if(f.y > canvas.height){
+            f.y = 0;
+            f.x = Math.random()*canvas.width;
+        }
+    }
+}
+
+setInterval(drawSnow, 25);
 </script>
 
 </body>
