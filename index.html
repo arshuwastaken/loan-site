@@ -118,7 +118,14 @@
 </div>
 
 <script>
-    const ADMIN_CODE = "123456"; // Aap yahan apna 6 digit code badal sakte hain
+    const ADMIN_CODE = "123456"; // Aapka 6 digit code
+
+    // Website khulte hi check karega agar admin pehle se logged-in hai
+    window.onload = function() {
+        if (localStorage.getItem("isAdmin") === "true") {
+            showAdminFeatures();
+        }
+    };
 
     function toggleNav() {
         var sidebar = document.getElementById("mySidebar");
@@ -128,15 +135,21 @@
     function promptAdmin() {
         let input = prompt("Enter 6-digit Admin Code:");
         if (input === ADMIN_CODE) {
-            document.getElementById("adminMenu").style.display = "block";
-            document.getElementById("grantBtn").style.display = "none";
+            localStorage.setItem("isAdmin", "true"); // Data save ho gaya
+            showAdminFeatures();
             alert("Admin Access Granted!");
         } else {
             alert("Invalid Code!");
         }
     }
 
+    function showAdminFeatures() {
+        document.getElementById("adminMenu").style.display = "block";
+        document.getElementById("grantBtn").style.display = "none";
+    }
+
     function signOutAdmin() {
+        localStorage.removeItem("isAdmin"); // Data clear ho gaya
         document.getElementById("adminMenu").style.display = "none";
         document.getElementById("grantBtn").style.display = "block";
         alert("Signed out as Admin.");
