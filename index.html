@@ -25,7 +25,6 @@
         .logo { width: 250px; height: auto; margin-top: 10vh; }
         h1 { font-size: 32px; font-weight: 600; }
 
-        /* Dragging Buttons Style */
         .btn { 
             position: absolute; 
             padding: 14px 26px; 
@@ -74,6 +73,7 @@
     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 20px;">
     <a href="#" id="grantBtn" onclick="document.getElementById('adminModal').style.display='flex'">Grant Admin</a>
     <div id="adminMenu" style="display:none;">
+        <a href="#" onclick="viewApplications()" style="color: #22c55e;">📋 View Applications</a>
         <a href="#" onclick="toggleEditMode()" id="editToggleLink" style="color: #f1c40f;">🖱️ Start Editing Layout</a>
         <a href="#" onclick="signOutAdmin()" style="color: #ff4757;">🚪 Sign Out</a>
     </div>
@@ -91,14 +91,13 @@
     const ADMIN_CODE = "201413";
     let isEditMode = false;
 
-    // 1. Check Admin
     function checkAdmin() {
         if(document.getElementById("adminInput").value === ADMIN_CODE) {
             localStorage.setItem("isAdmin", "true");
             showAdminFeatures();
             document.getElementById("adminModal").style.display = "none";
             showMsg("Admin Access Granted!", "#22c55e");
-        } else { showMsg("Invalid!", "#ef4444"); }
+        } else { showMsg("Invalid Code!", "#ef4444"); }
     }
 
     function showAdminFeatures() { 
@@ -106,7 +105,6 @@
         document.getElementById("grantBtn").style.display = "none"; 
     }
 
-    // 2. Toggle Edit Mode
     function toggleEditMode() {
         isEditMode = !isEditMode;
         const btns = document.querySelectorAll('.draggable');
@@ -119,7 +117,7 @@
         showMsg(isEditMode ? "Edit Mode ON" : "Edit Mode OFF", "#f1c40f");
     }
 
-    // 3. Drag Logic
+    // Drag Logic
     document.querySelectorAll('.draggable').forEach(btn => {
         let isDragging = false;
         btn.addEventListener('mousedown', e => {
@@ -140,7 +138,6 @@
         });
     });
 
-    // 4. Publish (Permanent Save)
     function publishChanges() {
         const positions = {};
         document.querySelectorAll('.draggable').forEach(btn => {
@@ -151,7 +148,6 @@
         toggleEditMode();
     }
 
-    // 5. Load Positions on Start
     window.onload = function() {
         if (localStorage.getItem("isAdmin") === "true") showAdminFeatures();
         
@@ -170,6 +166,7 @@
     function toggleNav() { var s = document.getElementById("mySidebar"); s.style.width = s.style.width === "250px" ? "0" : "250px"; }
     function signOutAdmin() { localStorage.removeItem("isAdmin"); location.reload(); }
     function showMsg(t, c) { var m = document.getElementById('messageBox'); m.innerText = t; m.style.backgroundColor = c; m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 3000); }
+    function viewApplications() { window.open("https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit", "_blank"); }
     function goApply(){ if(!isEditMode) window.location.href = "apply.html"; }
     function goContact(){ if(!isEditMode) window.location.href = "contact.html"; }
 
