@@ -4,11 +4,16 @@
     <title>QuickLoan</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <!-- Favicon (browser tab logo) -->
+    <!-- Favicon -->
     <link rel="icon" href="logo.png">
 
     <style>
-        body { margin: 0; font-family: Arial; color: white; overflow: hidden; }
+        body { 
+            margin: 0; 
+            font-family: Arial; 
+            color: white; 
+            overflow: hidden; 
+        }
 
         body::before {
             content: "";
@@ -22,20 +27,37 @@
             z-index: -1;
         }
 
+        /* ANIMATIONS */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
         .center {
             height: 100vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            animation: fadeIn 1s ease-in-out;
         }
 
         .logo {
             width: 80px;
             margin-bottom: 15px;
+            animation: float 3s ease-in-out infinite;
         }
 
-        h1 { margin-bottom: 30px; }
+        h1 { 
+            margin-bottom: 30px; 
+            text-shadow: 0 0 10px rgba(255,255,255,0.5);
+        }
 
         .btn {
             padding: 15px 30px;
@@ -44,17 +66,26 @@
             border-radius: 8px;
             font-size: 16px;
             cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .btn:hover {
+            transform: scale(1.1);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
         }
 
         .green { background: #22c55e; }
         .blue { background: #3b82f6; }
+
     </style>
 </head>
 
 <body>
 
 <div class="center">
-    <!-- LOGO -->
     <img src="logo.png" class="logo">
 
     <h1>Prabhat Loan Services 💰</h1>
