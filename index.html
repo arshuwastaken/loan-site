@@ -29,7 +29,7 @@
 
         canvas { position: fixed; inset: 0; z-index: -1; }
 
-        /* Menu Icon (3 lines) */
+        /* Menu Icon */
         .menu-icon {
             position: absolute;
             top: 20px;
@@ -46,12 +46,13 @@
             position: fixed;
             top: 0;
             left: 0;
-            background: rgba(0,0,0,0.8);
-            backdrop-filter: blur(10px);
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(15px);
             overflow-x: hidden;
             transition: 0.5s;
             padding-top: 80px;
             z-index: 50;
+            border-right: 1px solid rgba(255,255,255,0.1);
         }
 
         .sidebar a {
@@ -63,7 +64,7 @@
             transition: 0.3s;
         }
 
-        .sidebar a:hover { color: #22c55e; }
+        .sidebar a:hover { color: #22c55e; padding-left: 35px; }
 
         .content-container { text-align: center; }
 
@@ -99,6 +100,10 @@
     <a href="#">Terms and Policy</a>
     <a href="#">Applied Loans</a>
     <a href="#">Previous Loan History</a>
+    
+    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 20px;">
+    
+    <a href="#">Grant Admin</a>
 </div>
 
 <div class="content-container">
