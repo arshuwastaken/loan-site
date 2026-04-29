@@ -4,8 +4,7 @@
     <title>Star Choice Finserv</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.15.0/Sortable.min.js"></script>
-
+    
     <style>
         body { margin: 0; font-family: 'Poppins', sans-serif; color: white; overflow: hidden; background: url('bg.png') center/cover no-repeat; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; transition: background 0.5s; }
         body::after { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: -2; }
@@ -16,20 +15,46 @@
         .sidebar a { padding: 15px 25px; text-decoration: none; font-size: 18px; color: white; display: block; transition: 0.3s; }
         .sidebar a:hover { color: #22c55e; padding-left: 35px; }
 
-        /* FIXED MODAL STYLE */
-        #adminModal, #editModal, #addBtnModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
+        #adminModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: #1e293b; padding: 25px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 300px; }
         .modal-content input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; background: #0f172a; color: white; }
         .modal-btn { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; margin: 5px; }
 
         #messageBox { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; display: none; z-index: 2000; }
-        .content-container { text-align: center; }
-        .logo { width: 250px; height: auto; margin-bottom: 25px; cursor: pointer; }
-        h1 { font-size: 32px; font-weight: 600; margin-bottom: 30px; }
-        .btn-box { display: flex; gap: 20px; justify-content: center; padding: 20px; }
-        .btn { padding: 14px 26px; border: 2px solid white; border-radius: 10px; cursor: pointer; background: transparent; color: white; transition: 0.3s; backdrop-filter: blur(5px); user-select: none; }
-        .btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
-        .admin-edit-active { border: 2px dashed #f1c40f !important; }
+        .content-container { text-align: center; width: 100%; height: 100%; position: relative; }
+        .logo { width: 250px; height: auto; margin-top: 10vh; }
+        h1 { font-size: 32px; font-weight: 600; }
+
+        /* Dragging Buttons Style */
+        .btn { 
+            position: absolute; 
+            padding: 14px 26px; 
+            border: 2px solid white; 
+            border-radius: 10px; 
+            cursor: grab; 
+            background: transparent; 
+            color: white; 
+            backdrop-filter: blur(5px); 
+            user-select: none; 
+            transition: transform 0.2s, background 0.3s;
+        }
+        .btn:active { cursor: grabbing; }
+        .admin-active { border: 2px dashed #f1c40f !important; box-shadow: 0 0 15px #f1c40f; }
+
+        #publishBtn { 
+            display: none; 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: #22c55e; 
+            color: white; 
+            padding: 12px 24px; 
+            border-radius: 50px; 
+            border: none; 
+            font-weight: 600; 
+            cursor: pointer; 
+            z-index: 1000; 
+        }
     </style>
 </head>
 
@@ -38,11 +63,9 @@
 <canvas id="snow"></canvas>
 <div id="messageBox"></div>
 
+<button id="publishBtn" onclick="publishChanges()">💾 Publish Changes</button>
+
 <div id="adminModal"><div class="modal-content"><h3>Enter Admin Code</h3><input type="password" id="adminInput" placeholder="6-digit code"><br><button class="modal-btn" onclick="checkAdmin()" style="background:#22c55e;">Submit</button><button class="modal-btn" onclick="document.getElementById('adminModal').style.display='none'" style="background:#ef4444;">Cancel</button></div></div>
-
-<div id="editModal"><div class="modal-content"><h3 id="modalTitle">Change Item</h3><input type="text" id="urlInput" placeholder="Paste URL here"><br><button class="modal-btn" onclick="saveSettings()" style="background:#22c55e;">Save</button><button class="modal-btn" onclick="document.getElementById('editModal').style.display='none'" style="background:#ef4444;">Cancel</button></div></div>
-
-<div id="addBtnModal"><div class="modal-content"><h3>Add New Button</h3><input type="text" id="btnName" placeholder="Button Name"><input type="text" id="btnLink" placeholder="Link URL"><br><button class="modal-btn" onclick="saveNewBtn()" style="background:#22c55e;">Add</button><button class="modal-btn" onclick="document.getElementById('addBtnModal').style.display='none'" style="background:#ef4444;">Cancel</button></div></div>
 
 <div class="menu-icon" onclick="toggleNav()">&#9776;</div>
 <div id="mySidebar" class="sidebar">
@@ -51,87 +74,106 @@
     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 20px;">
     <a href="#" id="grantBtn" onclick="document.getElementById('adminModal').style.display='flex'">Grant Admin</a>
     <div id="adminMenu" style="display:none;">
-        <a href="#" onclick="viewApplications()" style="color: #22c55e;">📋 View Applications</a>
-        <a href="#" onclick="toggleDrag()" style="color: #f1c40f;">🖱️ Toggle Drag & Drop</a>
-        <a href="#" onclick="openEdit('logo')" style="color: #3498db;">🖼️ Change Logo</a>
-        <a href="#" onclick="openEdit('bg')" style="color: #f1c40f;">🎨 Change Background</a>
-        <a href="#" onclick="document.getElementById('addBtnModal').style.display='flex'" style="color: #ffffff;">➕ Add New Button</a>
+        <a href="#" onclick="toggleEditMode()" id="editToggleLink" style="color: #f1c40f;">🖱️ Start Editing Layout</a>
         <a href="#" onclick="signOutAdmin()" style="color: #ff4757;">🚪 Sign Out</a>
     </div>
 </div>
 
-<div class="content-container">
-    <img src="logo.png" alt="Star Choice Logo" class="logo" id="mainLogo">
+<div class="content-container" id="mainArea">
+    <img src="logo.png" alt="Star Choice Logo" class="logo">
     <h1>Star Choice Finserv🌐</h1>
-    <div class="btn-box" id="btnContainer">
-        <button class="btn" onclick="goApply()">💰 Apply For Loan</button>
-        <button class="btn" onclick="goContact()">📞 Contact Us</button>
-    </div>
+    
+    <button class="btn draggable" id="btnApply" style="top: 50%; left: 40%;" onclick="goApply()">💰 Apply For Loan</button>
+    <button class="btn draggable" id="btnContact" style="top: 50%; left: 55%;" onclick="goContact()">📞 Contact Us</button>
 </div>
 
 <script>
     const ADMIN_CODE = "201413";
-    let editType = '';
-    let sortable = new Sortable(document.getElementById('btnContainer'), { animation: 150, disabled: true });
+    let isEditMode = false;
 
-    function toggleNav() { var s = document.getElementById("mySidebar"); s.style.width = s.style.width === "250px" ? "0" : "250px"; }
-    
+    // 1. Check Admin
     function checkAdmin() {
         if(document.getElementById("adminInput").value === ADMIN_CODE) {
             localStorage.setItem("isAdmin", "true");
-            document.getElementById("adminMenu").style.display = "block";
-            document.getElementById("grantBtn").style.display = "none";
+            showAdminFeatures();
             document.getElementById("adminModal").style.display = "none";
             showMsg("Admin Access Granted!", "#22c55e");
-        } else { showMsg("Invalid Code!", "#ef4444"); }
+        } else { showMsg("Invalid!", "#ef4444"); }
     }
 
-    function openEdit(type) {
-        editType = type;
-        document.getElementById('modalTitle').innerText = (type === 'logo') ? "Change Logo URL" : "Change Background URL";
-        document.getElementById('editModal').style.display = "flex";
+    function showAdminFeatures() { 
+        document.getElementById("adminMenu").style.display = "block"; 
+        document.getElementById("grantBtn").style.display = "none"; 
     }
 
-    function saveSettings() {
-        let url = document.getElementById('urlInput').value;
-        if(editType === 'logo') { document.getElementById('mainLogo').src = url; localStorage.setItem("siteLogo", url); }
-        else { document.body.style.background = `url('${url}') center/cover no-repeat`; localStorage.setItem("siteBackground", url); }
-        document.getElementById('editModal').style.display = "none";
-        showMsg("Updated Successfully!", "#22c55e");
+    // 2. Toggle Edit Mode
+    function toggleEditMode() {
+        isEditMode = !isEditMode;
+        const btns = document.querySelectorAll('.draggable');
+        const publishBtn = document.getElementById('publishBtn');
+        const link = document.getElementById('editToggleLink');
+
+        btns.forEach(btn => btn.classList.toggle('admin-active'));
+        publishBtn.style.display = isEditMode ? 'block' : 'none';
+        link.innerText = isEditMode ? "🛑 Stop Editing" : "🖱️ Start Editing Layout";
+        showMsg(isEditMode ? "Edit Mode ON" : "Edit Mode OFF", "#f1c40f");
     }
 
-    function saveNewBtn() {
-        let name = document.getElementById('btnName').value;
-        let link = document.getElementById('btnLink').value;
-        if(name && link) {
-            let btn = document.createElement('button');
-            btn.className = 'btn';
-            btn.innerText = name;
-            btn.onclick = () => window.location.href = link;
-            document.getElementById('btnContainer').appendChild(btn);
-            document.getElementById('addBtnModal').style.display = "none";
-        }
+    // 3. Drag Logic
+    document.querySelectorAll('.draggable').forEach(btn => {
+        let isDragging = false;
+        btn.addEventListener('mousedown', e => {
+            if (!isEditMode) return;
+            isDragging = true;
+            btn.style.zIndex = 1000;
+        });
+
+        document.addEventListener('mousemove', e => {
+            if (!isDragging || !isEditMode) return;
+            btn.style.left = e.clientX - btn.offsetWidth / 2 + 'px';
+            btn.style.top = e.clientY - btn.offsetHeight / 2 + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            btn.style.zIndex = 1;
+        });
+    });
+
+    // 4. Publish (Permanent Save)
+    function publishChanges() {
+        const positions = {};
+        document.querySelectorAll('.draggable').forEach(btn => {
+            positions[btn.id] = { top: btn.style.top, left: btn.style.left };
+        });
+        localStorage.setItem("btnPositions", JSON.stringify(positions));
+        showMsg("Changes Published Permanently!", "#22c55e");
+        toggleEditMode();
     }
 
-    function toggleDrag() {
-        sortable.option("disabled", !sortable.option("disabled"));
-        showMsg(sortable.option("disabled") ? "Drag & Drop OFF" : "Drag & Drop ON", "#f1c40f");
-        document.getElementById('btnContainer').classList.toggle('admin-edit-active');
-    }
-
-    function signOutAdmin() { localStorage.removeItem("isAdmin"); location.reload(); }
-    function showMsg(t, c) { var m = document.getElementById('messageBox'); m.innerText = t; m.style.backgroundColor = c; m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 3000); }
-    function viewApplications() { window.open("https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit", "_blank"); }
-    function goApply(){ window.location.href = "apply.html"; }
-    function goContact(){ window.location.href = "contact.html"; }
-
+    // 5. Load Positions on Start
     window.onload = function() {
-        if (localStorage.getItem("isAdmin") === "true") { document.getElementById("adminMenu").style.display = "block"; document.getElementById("grantBtn").style.display = "none"; }
-        if (localStorage.getItem("siteLogo")) document.getElementById('mainLogo').src = localStorage.getItem("siteLogo");
-        if (localStorage.getItem("siteBackground")) document.body.style.background = `url('${localStorage.getItem("siteBackground")}') center/cover no-repeat`;
+        if (localStorage.getItem("isAdmin") === "true") showAdminFeatures();
+        
+        const savedPos = JSON.parse(localStorage.getItem("btnPositions"));
+        if (savedPos) {
+            Object.keys(savedPos).forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    btn.style.top = savedPos[id].top;
+                    btn.style.left = savedPos[id].left;
+                }
+            });
+        }
     };
 
-    /* Snow Script */
+    function toggleNav() { var s = document.getElementById("mySidebar"); s.style.width = s.style.width === "250px" ? "0" : "250px"; }
+    function signOutAdmin() { localStorage.removeItem("isAdmin"); location.reload(); }
+    function showMsg(t, c) { var m = document.getElementById('messageBox'); m.innerText = t; m.style.backgroundColor = c; m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 3000); }
+    function goApply(){ if(!isEditMode) window.location.href = "apply.html"; }
+    function goContact(){ if(!isEditMode) window.location.href = "contact.html"; }
+
+    /* Snow Animation */
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
