@@ -3,65 +3,132 @@
 <head>
     <title>Contact Us</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
     <style>
+        /* Fade-in transition */
         body {
             margin: 0;
-            font-family: Arial;
-            background: #0f172a;
+            font-family: 'Poppins', sans-serif;
+            background: url('bg.png') center/cover no-repeat;
             color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.8s ease-in;
+            overflow: hidden;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: -2;
+        }
+
+        canvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+        }
+
+        /* Transparent box styling */
+        .box {
+            background: rgba(30, 41, 59, 0.4);
+            padding: 30px;
+            width: 300px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
             text-align: center;
         }
 
-        h1 {
-            margin-top: 50px;
-        }
-
-        .box {
-            background: #1e293b;
-            padding: 25px;
-            margin: 30px auto;
-            width: 300px;
-            border-radius: 12px;
-        }
+        h1 { margin-bottom: 20px; }
 
         .btn {
             display: block;
-            margin: 10px auto;
+            margin: 15px auto;
             padding: 12px;
             width: 90%;
-            border-radius: 6px;
+            border-radius: 8px;
             text-decoration: none;
             color: white;
-            font-weight: bold;
+            font-weight: 600;
+            transition: 0.3s;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
-        .tg { background: #229ED9; }
-        .wa { background: #25D366; }
-        .gm { background: #EA4335; }
+        .tg { background: rgba(34, 158, 217, 0.8); }
+        .wa { background: rgba(37, 211, 102, 0.8); }
+        .gm { background: rgba(234, 67, 53, 0.8); }
 
         .btn:hover {
-            opacity: 0.8;
+            transform: translateY(-3px);
+            filter: brightness(1.2);
         }
     </style>
 </head>
 
 <body>
 
-<h1>Contact Us 📞</h1>
+<canvas id="snow"></canvas>
 
 <div class="box">
-    <a class="btn tg" href="https://t.me/@wotsnow" target="_blank">
-        📩 Telegram
-    </a>
-
-    <a class="btn wa" href="https://wa.me/9826935448" target="_blank">
-        💬 WhatsApp
-    </a>
-
-    <a class="btn gm" href="mailto:arshshuklabpl@gmail.com">
-        📧 Gmail
-    </a>
+    <h1>Contact Us 📞</h1>
+    
+    <a class="btn tg" href="https://t.me/@wotsnow" target="_blank">📩 Telegram</a>
+    <a class="btn wa" href="https://wa.me/9826935448" target="_blank">💬 WhatsApp</a>
+    <a class="btn gm" href="mailto:arshshuklabpl@gmail.com">📧 Gmail</a>
 </div>
+
+<script>
+    /* Same Snow Script */
+    const canvas = document.getElementById("snow");
+    const ctx = canvas.getContext("2d");
+
+    function resize(){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    let snowflakes = [];
+    for(let i=0;i<120;i++){
+        snowflakes.push({
+            x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+            r: Math.random()*3+1, d: Math.random()*1.5
+        });
+    }
+
+    function drawSnow(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        for(let f of snowflakes){
+            ctx.moveTo(f.x,f.y);
+            ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);
+        }
+        ctx.fill();
+        moveSnow();
+    }
+
+    function moveSnow(){
+        for(let f of snowflakes){
+            f.y += f.d;
+            if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; }
+        }
+    }
+    setInterval(drawSnow, 25);
+</script>
 
 </body>
 </html>
