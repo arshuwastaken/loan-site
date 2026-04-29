@@ -20,10 +20,7 @@
             overflow: hidden;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
         body::after {
             content: "";
@@ -33,11 +30,7 @@
             z-index: -2;
         }
 
-        canvas {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-        }
+        canvas { position: fixed; inset: 0; z-index: -1; }
 
         .box {
             background: rgba(30, 41, 59, 0.4);
@@ -49,44 +42,32 @@
             text-align: center;
         }
 
-        h1 { margin-bottom: 20px; }
-
-        input {
-            width: 85%;
-            padding: 12px;
-            margin: 8px 0;
-            border-radius: 8px;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(255,255,255,0.1);
-            color: white;
-            outline: none;
-        }
-
-        input::placeholder { color: rgba(255,255,255,0.6); }
-
-        button {
-            width: 90%;
-            padding: 12px;
-            margin-top: 15px;
-            background: rgba(34, 197, 94, 0.8);
-            border: none;
+        /* Message Box Style */
+        #messageBox {
+            position: fixed;
+            top: 20px;
+            padding: 15px 25px;
             border-radius: 8px;
             color: white;
             font-weight: 600;
-            cursor: pointer;
-            transition: 0.3s;
+            display: none;
+            animation: fadeIn 0.5s;
+            z-index: 1000;
         }
 
-        button:hover {
-            transform: translateY(-3px);
-            background: rgba(34, 197, 94, 1);
-        }
+        h1 { margin-bottom: 20px; }
+        input { width: 85%; padding: 12px; margin: 8px 0; border-radius: 8px; border: 1px solid rgba(255,255,255,0.2); background: rgba(255,255,255,0.1); color: white; outline: none; }
+        input::placeholder { color: rgba(255,255,255,0.6); }
+        button { width: 90%; padding: 12px; margin-top: 15px; background: rgba(34, 197, 94, 0.8); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; transition: 0.3s; }
+        button:hover { transform: translateY(-3px); background: rgba(34, 197, 94, 1); }
     </style>
 </head>
 
 <body>
 
 <canvas id="snow"></canvas>
+
+<div id="messageBox"></div>
 
 <div class="box">
     <h1>Apply For Loan 💰</h1>
@@ -102,52 +83,47 @@
         var amount = document.getElementById('amount').value;
         var phone = document.getElementById('phone').value;
         
-        // Yahan apna Web App URL paste karein
         var url = "https://script.google.com/macros/s/AKfycby-y9u9jRff_KtT36mMYh4ALXTSd5bCHn6J2VXJanBLNCrMOo8VBGZZ0lfeff0pEKgxA/exec";
         
-        // Data bhejne ke liye fetch request
-        fetch(url + "?name=" + name + "&amount=" + amount + "&phone=" + phone)
-        .then(response => {
-            alert("Application submitted successfully!");
-            // Form clear karne ke liye
+        // mode: 'no-cors' use kiya hai taaki network error na aaye
+        fetch(url + "?name=" + name + "&amount=" + amount + "&phone=" + phone, { mode: 'no-cors' })
+        .then(() => {
+            showMsg("Application submitted successfully!", "#22c55e");
             document.getElementById('name').value = '';
             document.getElementById('amount').value = '';
             document.getElementById('phone').value = '';
         })
-        .catch(error => alert("Error: " + error));
+        .catch(() => {
+            showMsg("Error: Please check your connection.", "#ef4444");
+        });
+    }
+
+    function showMsg(text, color) {
+        var msgBox = document.getElementById('messageBox');
+        msgBox.innerText = text;
+        msgBox.style.backgroundColor = color;
+        msgBox.style.display = 'block';
+        setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
     }
 
     /* Snow Script */
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
-
-    function resize(){
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
+    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     resize();
     window.addEventListener("resize", resize);
-
     let snowflakes = [];
     for(let i=0;i<120;i++){
-        snowflakes.push({
-            x: Math.random()*canvas.width, y: Math.random()*canvas.height,
-            r: Math.random()*3+1, d: Math.random()*1.5
-        });
+        snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*3+1, d: Math.random()*1.5 });
     }
-
     function drawSnow(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         ctx.fillStyle = "white";
         ctx.beginPath();
-        for(let f of snowflakes){
-            ctx.moveTo(f.x,f.y);
-            ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);
-        }
+        for(let f of snowflakes){ ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true); }
         ctx.fill();
         moveSnow();
     }
-
     function moveSnow(){
         for(let f of snowflakes){
             f.y += f.d;
