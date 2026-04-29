@@ -13,20 +13,26 @@
             font-family: 'Poppins', sans-serif;
             color: white;
             overflow: hidden;
-
-            /* BACKGROUND IMAGE */
             background: url('bg.png');
             background-size: cover;
             background-position: center;
         }
 
-        /* DARK OVERLAY (pro look) */
+        /* DARK OVERLAY */
         body::after {
             content: "";
             position: fixed;
             width: 100%;
             height: 100%;
             background: rgba(0,0,0,0.5);
+            top: 0;
+            left: 0;
+            z-index: -2;
+        }
+
+        /* SNOW CANVAS */
+        canvas {
+            position: fixed;
             top: 0;
             left: 0;
             z-index: -1;
@@ -38,38 +44,39 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            text-align: center;
         }
 
         h1 {
             font-size: 32px;
-            margin-bottom: 25px;
+            margin-bottom: 40px;
             font-weight: 600;
         }
 
-        /* BUTTONS */
+        /* BUTTON CONTAINER */
+        .btn-box {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 40px;
+            position: absolute;
+            bottom: 80px;
+        }
+
+        /* TRANSPARENT BUTTONS */
         .btn {
             padding: 14px 30px;
-            margin: 10px;
-            border: none;
+            border: 2px solid white;
             border-radius: 8px;
             font-size: 15px;
             cursor: pointer;
+            background: transparent;
+            color: white;
             transition: 0.3s;
-            width: 220px;
-        }
-
-        .green {
-            background: linear-gradient(45deg, #22c55e, #16a34a);
-        }
-
-        .blue {
-            background: linear-gradient(45deg, #3b82f6, #2563eb);
         }
 
         .btn:hover {
+            background: rgba(255,255,255,0.1);
             transform: translateY(-3px);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
         }
 
         .btn:active {
@@ -81,16 +88,68 @@
 
 <body>
 
+<!-- SNOW -->
+<canvas id="snow"></canvas>
+
 <div class="center">
     <h1>၊|Star Choice Finserv🌐</h1>
+</div>
 
-    <button class="btn green" onclick="goApply()">Apply For Loan</button>
-    <button class="btn blue" onclick="goContact()">Contact Us</button>
+<!-- LEFT RIGHT BUTTONS -->
+<div class="btn-box">
+    <button class="btn" onclick="goApply()">Apply For Loan</button>
+    <button class="btn" onclick="goContact()">Contact Us</button>
 </div>
 
 <script>
 function goApply(){ window.location.href = "apply.html"; }
 function goContact(){ window.location.href = "contact.html"; }
+
+// SNOW EFFECT
+const canvas = document.getElementById("snow");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let snowflakes = [];
+
+for(let i=0;i<100;i++){
+    snowflakes.push({
+        x: Math.random()*canvas.width,
+        y: Math.random()*canvas.height,
+        r: Math.random()*3+1,
+        d: Math.random()*1
+    });
+}
+
+function drawSnow(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+
+    for(let i=0;i<snowflakes.length;i++){
+        let f = snowflakes[i];
+        ctx.moveTo(f.x,f.y);
+        ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);
+    }
+
+    ctx.fill();
+    moveSnow();
+}
+
+function moveSnow(){
+    for(let i=0;i<snowflakes.length;i++){
+        let f = snowflakes[i];
+        f.y += f.d;
+        if(f.y > canvas.height){
+            f.y = 0;
+            f.x = Math.random()*canvas.width;
+        }
+    }
+}
+
+setInterval(drawSnow, 25);
 </script>
 
 </body>
