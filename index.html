@@ -29,7 +29,6 @@
 
         canvas { position: fixed; inset: 0; z-index: -1; }
 
-        /* Menu Icon */
         .menu-icon {
             position: absolute;
             top: 20px;
@@ -39,7 +38,6 @@
             z-index: 100;
         }
 
-        /* Sidebar */
         .sidebar {
             height: 100%;
             width: 0;
@@ -67,11 +65,8 @@
         .sidebar a:hover { color: #22c55e; padding-left: 35px; }
 
         .content-container { text-align: center; }
-
         .logo { width: 250px; height: auto; margin-bottom: 25px; }
-
         h1 { font-size: 32px; font-weight: 600; margin-bottom: 30px; }
-
         .btn-box { display: flex; gap: 20px; justify-content: center; }
 
         .btn {
@@ -103,7 +98,13 @@
     
     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 20px;">
     
-    <a href="#">Grant Admin</a>
+    <a href="#" id="grantBtn" onclick="promptAdmin()">Grant Admin</a>
+    
+    <div id="adminMenu" style="display:none;">
+        <a href="#" onclick="viewApplications()" style="color: #22c55e;">📋 View Loan Applications</a>
+        <a href="#" onclick="signOutAdmin()" style="color: #ff4757;">🚪 Sign Out as Admin</a>
+        <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 20px;">
+    </div>
 </div>
 
 <div class="content-container">
@@ -117,13 +118,32 @@
 </div>
 
 <script>
+    const ADMIN_CODE = "123456"; // Aap yahan apna 6 digit code badal sakte hain
+
     function toggleNav() {
         var sidebar = document.getElementById("mySidebar");
-        if (sidebar.style.width === "250px") {
-            sidebar.style.width = "0";
+        sidebar.style.width = sidebar.style.width === "250px" ? "0" : "250px";
+    }
+
+    function promptAdmin() {
+        let input = prompt("Enter 6-digit Admin Code:");
+        if (input === ADMIN_CODE) {
+            document.getElementById("adminMenu").style.display = "block";
+            document.getElementById("grantBtn").style.display = "none";
+            alert("Admin Access Granted!");
         } else {
-            sidebar.style.width = "250px";
+            alert("Invalid Code!");
         }
+    }
+
+    function signOutAdmin() {
+        document.getElementById("adminMenu").style.display = "none";
+        document.getElementById("grantBtn").style.display = "block";
+        alert("Signed out as Admin.");
+    }
+
+    function viewApplications() {
+        alert("Loan Applications:\n- Name: Rahul, Amount: 50,000\n- Name: Priya, Amount: 1,00,000");
     }
 
     function goApply(){ window.location.href = "apply.html"; }
