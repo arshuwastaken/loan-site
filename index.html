@@ -8,105 +8,68 @@
             margin: 0;
             font-family: Arial;
             color: white;
-            overflow-x: hidden;
+            overflow: hidden;
         }
 
-        /* Background layer */
         body::before {
             content: "";
             position: fixed;
-            width: 110%;
-            height: 110%;
-            top: -5%;
-            left: -5%;
-            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
                         url('bg.jpg');
             background-size: cover;
-            background-position: centere;
-            transform: rotate(-3deg);
+            background-position: center;
             z-index: -1;
         }
 
-        .header {
-            padding: 20px;
-            text-align: center;
-            font-size: 26px;
-            font-weight: bold;
+        .center {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
-        .hero {
-            text-align: center;
-            padding: 40px 20px;
+        h1 {
+            margin-bottom: 30px;
         }
 
-        .hero h1 {
-            font-size: 38px;
-        }
-
-        .box {
-            background: rgba(30,41,59,0.8);
-            padding: 25px;
-            margin: 20px auto;
-            width: 320px;
-            border-radius: 12px;
-            text-align: center;
-            backdrop-filter: blur(10px);
-        }
-
-        input {
-            width: 90%;
-            padding: 12px;
-            margin: 8px;
-            border-radius: 6px;
+        .btn {
+            padding: 15px 30px;
+            margin: 10px;
             border: none;
-        }
-
-        button {
-            padding: 12px 25px;
-            background: #22c55e;
-            border: none;
-            border-radius: 6px;
+            border-radius: 8px;
+            font-size: 16px;
             cursor: pointer;
-            font-weight: bold;
         }
 
-        button:hover {
-            background: #16a34a;
+        .green {
+            background: #22c55e;
         }
 
-        .footer {
-            text-align: center;
-            padding: 20px;
-            font-size: 12px;
-            color: #ccc;
+        .blue {
+            background: #3b82f6;
         }
     </style>
 </head>
 
 <body>
 
-<div class="header">Prabhat Loan Services 💰</div>
+<div class="center">
+    <h1>Prabhat Loan Services 💰</h1>
 
-<div class="hero">
-    <h1>Apply For Car Lone</h1>
-    <p>Fast Approval • Trusted Help • Simple Process</p>
-</div>
-
-<div class="box">
-    <h2>Apply Now</h2>
-    <input type="text" placeholder="Full Name">
-    <input type="number" placeholder="Loan Amount">
-    <input type="text" placeholder="Mobile Number">
-    <button onclick="apply()">Submit</button>
-</div>
-
-<div class="footer">
-    *We are not a lender. We only provide loan assistance.
+    <button class="btn green" onclick="goApply()">Apply For Loan</button>
+    <button class="btn blue" onclick="goContact()">Contact Us</button>
 </div>
 
 <script>
-function apply(){
-    alert("Application submitted! We will contact you soon.");
+function goApply(){
+    window.location.href = "apply.html";
+}
+
+function goContact(){
+    window.location.href = "contact.html";
 }
 </script>
 
