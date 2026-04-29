@@ -16,19 +16,20 @@
         .sidebar a { padding: 15px 25px; text-decoration: none; font-size: 18px; color: white; display: block; transition: 0.3s; }
         .sidebar a:hover { color: #22c55e; padding-left: 35px; }
 
-        #adminModal, #editModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .modal-content { background: #1e293b; padding: 25px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 300px; }
-        .modal-content input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
+        #dynamicModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; justify-content: center; align-items: center; }
+        .modal-content { background: #1e293b; padding: 25px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 350px; }
+        .modal-content input { width: 85%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; background: #0f172a; color: white; }
         .modal-btn { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; margin: 5px; }
 
         #messageBox { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; display: none; z-index: 2000; }
         .content-container { text-align: center; }
         .logo { width: 250px; height: auto; margin-bottom: 25px; cursor: pointer; }
-        h1 { font-size: 32px; font-weight: 600; margin-bottom: 30px; }
-        .btn-box { display: flex; gap: 20px; justify-content: center; padding: 20px; }
+        .btn-box { display: flex; gap: 20px; justify-content: center; padding: 20px; min-height: 50px; }
         .btn { padding: 14px 26px; border: 2px solid white; border-radius: 10px; cursor: pointer; background: transparent; color: white; transition: 0.3s; backdrop-filter: blur(5px); user-select: none; }
-        .btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
-        .admin-edit-active { border: 2px dashed #f1c40f !important; }
+        
+        /* Admin Mode Styling */
+        .admin-edit-active .btn { resize: both; overflow: auto; border: 2px dashed #f1c40f !important; }
+        #publishBtn { display: none; position: fixed; bottom: 30px; right: 30px; padding: 15px 30px; background: #22c55e; border: none; border-radius: 30px; color: white; font-weight: bold; cursor: pointer; z-index: 1000; }
     </style>
 </head>
 
@@ -36,22 +37,28 @@
 
 <canvas id="snow"></canvas>
 <div id="messageBox"></div>
+<button id="publishBtn" onclick="publishChanges()">💾 Publish All Changes</button>
 
-<div id="adminModal"><div class="modal-content"><h3>Enter Admin Code</h3><input type="password" id="adminInput" placeholder="6-digit code"><br><button class="modal-btn" onclick="checkAdmin()" style="background:#22c55e;">Submit</button><button class="modal-btn" onclick="document.getElementById('adminModal').style.display='none'" style="background:#ef4444;">Cancel</button></div></div>
-<div id="editModal"><div class="modal-content"><h3 id="modalTitle">Change Item</h3><input type="text" id="urlInput" placeholder="Paste URL here"><br><button class="modal-btn" onclick="saveSettings()" style="background:#22c55e;">Save</button><button class="modal-btn" onclick="document.getElementById('editModal').style.display='none'" style="background:#ef4444;">Cancel</button></div></div>
+<div id="dynamicModal">
+    <div class="modal-content">
+        <h3 id="modalTitle">Settings</h3>
+        <input type="file" id="fileInput" accept="image/*" onchange="handleFile(this)">
+        <input type="text" id="modalInput1" placeholder="Or Paste URL">
+        <input type="text" id="modalInput2" placeholder="Link URL" style="display:none;">
+        <br>
+        <button class="modal-btn" onclick="submitModal()" style="background:#22c55e;">Confirm</button>
+        <button class="modal-btn" onclick="closeModal()" style="background:#ef4444;">Cancel</button>
+    </div>
+</div>
 
 <div class="menu-icon" onclick="toggleNav()">&#9776;</div>
 <div id="mySidebar" class="sidebar">
-    <a href="#">Terms and Policy</a>
-    <a href="#">Applied Loans</a>
-    <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 20px;">
-    <a href="#" id="grantBtn" onclick="promptAdmin()">Grant Admin</a>
+    <a href="#" id="grantBtn" onclick="openModal('admin')">Grant Admin</a>
     <div id="adminMenu" style="display:none;">
-        <a href="#" onclick="viewApplications()" style="color: #22c55e;">📋 View Applications</a>
-        <a href="#" onclick="toggleDrag()" style="color: #f1c40f;">🖱️ Toggle Drag & Drop</a>
-        <a href="#" onclick="openEdit('logo')" style="color: #3498db;">🖼️ Change Logo</a>
-        <a href="#" onclick="openEdit('bg')" style="color: #f1c40f;">🎨 Change Background</a>
-        <a href="#" onclick="addNewBtn()" style="color: #ffffff;">➕ Add New Button</a>
+        <a href="#" onclick="toggleDrag()" style="color: #f1c40f;">🖱️ Edit Mode (Drag/Resize)</a>
+        <a href="#" onclick="openModal('logo')" style="color: #3498db;">🖼️ Change Logo</a>
+        <a href="#" onclick="openModal('bg')" style="color: #f1c40f;">🎨 Change BG</a>
+        <a href="#" onclick="openModal('btn')" style="color: #ffffff;">➕ Add Button</a>
         <a href="#" onclick="signOutAdmin()" style="color: #ff4757;">🚪 Sign Out</a>
     </div>
 </div>
@@ -67,74 +74,64 @@
 
 <script>
     const ADMIN_CODE = "201413";
-    let editType = '';
+    let currentMode = '';
     let sortable = new Sortable(document.getElementById('btnContainer'), { animation: 150, disabled: true });
 
-    window.onload = function() {
-        if (localStorage.getItem("isAdmin") === "true") showAdminFeatures();
-        if (localStorage.getItem("siteLogo")) document.getElementById('mainLogo').src = localStorage.getItem("siteLogo");
-        if (localStorage.getItem("siteBackground")) document.body.style.background = `url('${localStorage.getItem("siteBackground")}') center/cover no-repeat`;
-    };
+    function handleFile(input) {
+        const reader = new FileReader();
+        reader.onload = (e) => document.getElementById('modalInput1').value = e.target.result;
+        reader.readAsDataURL(input.files[0]);
+    }
+
+    function openModal(mode) {
+        currentMode = mode;
+        document.getElementById('dynamicModal').style.display = "flex";
+        document.getElementById('modalInput2').style.display = (mode === 'btn') ? "block" : "none";
+        document.getElementById('modalTitle').innerText = mode.toUpperCase();
+    }
+
+    function closeModal() { document.getElementById('dynamicModal').style.display = "none"; }
+
+    function submitModal() {
+        let v1 = document.getElementById('modalInput1').value;
+        let v2 = document.getElementById('modalInput2').value;
+
+        if(currentMode === 'admin' && v1 === ADMIN_CODE) { localStorage.setItem("isAdmin", "true"); showAdminFeatures(); closeModal(); }
+        else if(currentMode === 'logo') { document.getElementById('mainLogo').src = v1; }
+        else if(currentMode === 'bg') { document.body.style.background = `url('${v1}') center/cover no-repeat`; }
+        else if(currentMode === 'btn') { 
+            let b = document.createElement('button'); b.className = 'btn'; b.innerText = v1; b.onclick = () => window.location.href = v2;
+            document.getElementById('btnContainer').appendChild(b);
+        }
+        closeModal();
+    }
 
     function toggleDrag() {
         sortable.option("disabled", !sortable.option("disabled"));
-        showMsg(sortable.option("disabled") ? "Drag & Drop OFF" : "Drag & Drop ON", "#f1c40f");
         document.getElementById('btnContainer').classList.toggle('admin-edit-active');
+        document.getElementById('publishBtn').style.display = sortable.option("disabled") ? "none" : "block";
+        showMsg("Admin Edit Mode " + (sortable.option("disabled") ? "OFF" : "ON"), "#f1c40f");
     }
 
-    function openEdit(type) {
-        editType = type;
-        document.getElementById('modalTitle').innerText = (type === 'logo') ? "Change Logo URL" : "Change Background URL";
-        document.getElementById('editModal').style.display = "flex";
+    function publishChanges() {
+        localStorage.setItem("savedLogo", document.getElementById('mainLogo').src);
+        localStorage.setItem("savedBg", document.body.style.background);
+        localStorage.setItem("savedLayout", document.getElementById('btnContainer').innerHTML);
+        showMsg("Changes Published Successfully!", "#22c55e");
     }
 
-    function saveSettings() {
-        let url = document.getElementById('urlInput').value;
-        if(editType === 'logo') {
-            document.getElementById('mainLogo').src = url;
-            localStorage.setItem("siteLogo", url);
-        } else {
-            document.body.style.background = `url('${url}') center/cover no-repeat`;
-            localStorage.setItem("siteBackground", url);
-        }
-        document.getElementById('editModal').style.display = "none";
-        showMsg("Updated Successfully!", "#22c55e");
-    }
-
-    function addNewBtn() {
-        let name = prompt("Enter Button Name:");
-        let link = prompt("Enter Link:");
-        if(name && link) {
-            let btn = document.createElement('button');
-            btn.className = 'btn';
-            btn.innerText = name;
-            btn.onclick = () => window.location.href = link;
-            document.getElementById('btnContainer').appendChild(btn);
-        }
-    }
-
-    // Puraane Functions (PromptAdmin, CheckAdmin, etc wahi hain)
-    function toggleNav() { var s = document.getElementById("mySidebar"); s.style.width = s.style.width === "250px" ? "0" : "250px"; }
-    function promptAdmin() { document.getElementById("adminModal").style.display = "flex"; }
-    function checkAdmin() { if(document.getElementById("adminInput").value === ADMIN_CODE) { localStorage.setItem("isAdmin", "true"); showAdminFeatures(); document.getElementById("adminModal").style.display = "none"; showMsg("Admin Access Granted!", "#22c55e"); } else showMsg("Invalid!", "#ef4444"); }
     function showAdminFeatures() { document.getElementById("adminMenu").style.display = "block"; document.getElementById("grantBtn").style.display = "none"; }
     function signOutAdmin() { localStorage.removeItem("isAdmin"); location.reload(); }
     function showMsg(t, c) { var m = document.getElementById('messageBox'); m.innerText = t; m.style.backgroundColor = c; m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 3000); }
-    function viewApplications() { window.open("https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit", "_blank"); }
-    function goApply(){ window.location.href = "apply.html"; }
-    function goContact(){ window.location.href = "contact.html"; }
 
-    /* Snow Script */
-    const canvas = document.getElementById("snow");
-    const ctx = canvas.getContext("2d");
-    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
-    resize();
-    window.addEventListener("resize", resize);
-    let snowflakes = [];
-    for(let i=0;i<120;i++){ snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*3+1, d: Math.random()*1.5 }); }
-    function drawSnow(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "white"; ctx.beginPath(); for(let f of snowflakes){ ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true); } ctx.fill(); moveSnow(); }
-    function moveSnow(){ for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; } } }
-    setInterval(drawSnow, 25);
+    window.onload = function() {
+        if (localStorage.getItem("isAdmin") === "true") showAdminFeatures();
+        if (localStorage.getItem("savedLogo")) document.getElementById('mainLogo').src = localStorage.getItem("savedLogo");
+        if (localStorage.getItem("savedBg")) document.body.style.background = localStorage.getItem("savedBg");
+        if (localStorage.getItem("savedLayout")) document.getElementById('btnContainer').innerHTML = localStorage.getItem("savedLayout");
+    };
+
+    function toggleNav() { var s = document.getElementById("mySidebar"); s.style.width = s.style.width === "250px" ? "0" : "250px"; }
 </script>
 </body>
 </html>
