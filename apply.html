@@ -1,43 +1,143 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Apply Loan</title>
+    <title>Apply For Loan</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
     <style>
-        body { margin: 0; font-family: Arial; color: white; background: #0f172a; text-align: center; }
-        .box {
-            background: #1e293b;
-            padding: 25px;
-            margin: 50px auto;
-            width: 320px;
-            border-radius: 12px;
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background: url('bg.png') center/cover no-repeat;
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.8s ease-in;
+            overflow: hidden;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        body::after {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: -2;
+        }
+
+        canvas {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+        }
+
+        .box {
+            background: rgba(30, 41, 59, 0.4);
+            padding: 30px;
+            width: 300px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+
+        h1 { margin-bottom: 20px; }
+
         input {
+            width: 85%;
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.1);
+            color: white;
+            outline: none;
+        }
+
+        input::placeholder { color: rgba(255,255,255,0.6); }
+
+        button {
             width: 90%;
             padding: 12px;
-            margin: 8px;
-            border-radius: 6px;
+            margin-top: 15px;
+            background: rgba(34, 197, 94, 0.8);
             border: none;
-        }
-        button {
-            padding: 12px 25px;
-            background: #22c55e;
-            border: none;
-            border-radius: 6px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
             cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            background: rgba(34, 197, 94, 1);
         }
     </style>
 </head>
+
 <body>
-<h1>Apply For Loan</h1>
+
+<canvas id="snow"></canvas>
+
 <div class="box">
+    <h1>Apply For Loan 💰</h1>
     <input type="text" placeholder="Full Name">
     <input type="number" placeholder="Loan Amount">
     <input type="text" placeholder="Mobile Number">
-    <button onclick="apply()">Submit</button>
+    <button onclick="apply()">Submit Application</button>
 </div>
+
 <script>
-function apply(){ alert("Application submitted!"); }
+    function apply(){ alert("Application submitted!"); }
+
+    /* Snow Script */
+    const canvas = document.getElementById("snow");
+    const ctx = canvas.getContext("2d");
+
+    function resize(){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    resize();
+    window.addEventListener("resize", resize);
+
+    let snowflakes = [];
+    for(let i=0;i<120;i++){
+        snowflakes.push({
+            x: Math.random()*canvas.width, y: Math.random()*canvas.height,
+            r: Math.random()*3+1, d: Math.random()*1.5
+        });
+    }
+
+    function drawSnow(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        for(let f of snowflakes){
+            ctx.moveTo(f.x,f.y);
+            ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true);
+        }
+        ctx.fill();
+        moveSnow();
+    }
+
+    function moveSnow(){
+        for(let f of snowflakes){
+            f.y += f.d;
+            if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; }
+        }
+    }
+    setInterval(drawSnow, 25);
 </script>
+
 </body>
 </html>
