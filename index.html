@@ -3,8 +3,13 @@
 <head>
     <title>QuickLoan</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Favicon (browser tab logo) -->
+    <link rel="icon" href="logo.png">
+
     <style>
         body { margin: 0; font-family: Arial; color: white; overflow: hidden; }
+
         body::before {
             content: "";
             position: fixed;
@@ -16,6 +21,7 @@
             background-position: center;
             z-index: -1;
         }
+
         .center {
             height: 100vh;
             display: flex;
@@ -23,7 +29,14 @@
             justify-content: center;
             align-items: center;
         }
+
+        .logo {
+            width: 80px;
+            margin-bottom: 15px;
+        }
+
         h1 { margin-bottom: 30px; }
+
         .btn {
             padding: 15px 30px;
             margin: 10px;
@@ -32,19 +45,28 @@
             font-size: 16px;
             cursor: pointer;
         }
+
         .green { background: #22c55e; }
         .blue { background: #3b82f6; }
     </style>
 </head>
+
 <body>
+
 <div class="center">
+    <!-- LOGO -->
+    <img src="logo.png" class="logo">
+
     <h1>Prabhat Loan Services 💰</h1>
+
     <button class="btn green" onclick="goApply()">Apply For Loan</button>
     <button class="btn blue" onclick="goContact()">Contact Us</button>
 </div>
+
 <script>
 function goApply(){ window.location.href = "apply.html"; }
 function goContact(){ window.location.href = "contact.html"; }
 </script>
+
 </body>
 </html>
