@@ -15,62 +15,38 @@
         .sidebar a { padding: 15px 25px; text-decoration: none; font-size: 18px; color: white; display: block; transition: 0.3s; }
         .sidebar a:hover { color: #22c55e; padding-left: 35px; }
 
-        #adminModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
+        /* Professional Modal */
+        #adminModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: #1e293b; padding: 25px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 300px; }
-        .modal-content h3 { margin-top: 0; }
-        .modal-content input { width: 85%; padding: 12px; margin: 15px 0; border-radius: 8px; border: none; background: #0f172a; color: white; font-size: 16px; outline: none; }
-        .modal-btn { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; margin: 5px; transition: 0.2s; }
-        
+        .modal-content input { width: 80%; padding: 10px; margin: 15px 0; border-radius: 5px; border: none; background: #0f172a; color: white; outline: none; }
+        .modal-btn { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; margin: 5px; }
+
+        /* Message Box */
         #messageBox { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; display: none; z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
-        .content-container { text-align: center; width: 100%; height: 100%; position: relative; }
-        .logo { width: 250px; height: auto; margin-top: 10vh; pointer-events: none; }
-        h1 { font-size: 32px; font-weight: 600; margin-top: 20px; pointer-events: none; }
+        .content-container { text-align: center; z-index: 5; }
+        .logo { width: 250px; height: auto; margin-bottom: 25px; }
+        h1 { font-size: 32px; font-weight: 600; margin-bottom: 30px; }
+        .btn-box { display: flex; gap: 20px; justify-content: center; }
+        .btn { padding: 14px 26px; border: 2px solid white; border-radius: 10px; cursor: pointer; background: transparent; color: white; transition: 0.3s; backdrop-filter: blur(5px); font-size: 16px; font-family: 'Poppins', sans-serif; }
+        .btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
 
-        .btn { 
-            position: absolute; 
-            padding: 14px 26px; 
-            border: 2px solid white; 
-            border-radius: 10px; 
-            cursor: pointer; 
-            background: transparent; 
-            color: white; 
-            backdrop-filter: blur(5px); 
-            transition: background 0.3s, transform 0.2s; 
-            white-space: nowrap;
-            z-index: 10;
-            transform: translate(-50%, -50%); /* Center based on position */
-        }
-        .admin-active { border: 2px dashed #f1c40f !important; cursor: grab !important; box-shadow: 0 0 15px #f1c40f; }
-
-        #publishBtn { 
-            display: none; 
-            position: fixed; 
-            bottom: 25px; 
-            right: 25px; 
-            background: #22c55e; 
-            color: white; 
-            padding: 12px 24px; 
-            border-radius: 50px; 
-            border: none; 
-            font-weight: 600; 
-            cursor: pointer; 
-            z-index: 1000; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        @media (max-width: 600px) {
+            .btn-box { flex-direction: column; gap: 10px; align-items: center; }
+            .btn { width: 200px; }
         }
     </style>
 </head>
+
 <body>
 
 <canvas id="snow"></canvas>
 <div id="messageBox"></div>
 
-<button id="publishBtn">💾 Publish Changes</button>
-
 <div id="adminModal">
     <div class="modal-content">
         <h3>Admin Verification</h3>
-        <input type="password" id="adminInput" placeholder="Enter Secure Code">
+        <input type="password" id="adminInput" placeholder="Enter Admin Code">
         <br>
         <button class="modal-btn" id="submitAdminBtn" style="background:#22c55e; color:white;">Submit</button>
         <button class="modal-btn" onclick="document.getElementById('adminModal').style.display='none'" style="background:#ef4444; color:white;">Cancel</button>
@@ -86,24 +62,24 @@
     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 20px;">
     <a href="#" id="grantBtn" onclick="document.getElementById('adminModal').style.display='flex'">Grant Admin</a>
     <div id="adminMenu" style="display:none;">
-        <a href="#" onclick="viewApplications()" style="color: #22c55e;">📋 View Applications</a>
-        <a href="#" id="editToggleLink" style="color: #f1c40f;">🖱️ Start Editing Layout</a>
-        <a href="#" onclick="signOutAdmin()" style="color: #ff4757;">🚪 Sign Out</a>
+        <a href="#" onclick="viewApplications()" style="color: #22c55e;">📋 View Loan Applications</a>
+        <a href="#" onclick="signOutAdmin()" style="color: #ff4757;">🚪 Sign Out as Admin</a>
     </div>
 </div>
 
-<div class="content-container" id="mainArea">
+<div class="content-container">
     <img src="logo.png" alt="Star Choice Logo" class="logo">
     <h1>Star Choice Finserv🌐</h1>
-    
-    <!-- Original Positions restored with % for responsiveness -->
-    <button class="btn draggable" id="btnApply" style="top: 60%; left: 40%;">💰 Apply For Loan</button>
-    <button class="btn draggable" id="btnContact" style="top: 60%; left: 60%;">📞 Contact Us</button>
+    <div class="btn-box">
+        <button class="btn" id="goApply">💰 Apply For Loan</button>
+        <button class="btn" id="goContact">📞 Contact Us</button>
+    </div>
 </div>
 
 <script type="module">
+    // Firebase Implementation
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
@@ -117,92 +93,65 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let isEditMode = false;
 
+    // Admin Login Logic via Firebase
     window.checkAdmin = async function() {
         const inputCode = document.getElementById("adminInput").value.trim();
-        const snapshot = await get(ref(db, 'admin/code'));
-        if (snapshot.exists() && String(snapshot.val()) === String(inputCode)) {
-            localStorage.setItem("isAdmin", "true");
-            location.reload();
-        } else {
-            showMsg("Invalid Code!", "#ef4444");
+        try {
+            const snapshot = await get(ref(db, 'admin/code'));
+            if (snapshot.exists() && String(snapshot.val()) === inputCode) {
+                localStorage.setItem("isAdmin", "true");
+                showAdminFeatures();
+                showMsg("Admin Access Granted!", "#22c55e");
+                document.getElementById("adminModal").style.display = "none";
+            } else {
+                showMsg("Invalid Code!", "#ef4444");
+            }
+        } catch (error) {
+            showMsg("Connection Error!", "#ef4444");
         }
-    }
+    };
     document.getElementById('submitAdminBtn').onclick = checkAdmin;
 
-    const posRef = ref(db, 'layout/positions');
-    onValue(posRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            Object.keys(data).forEach(id => {
-                const el = document.getElementById(id);
-                if (el) {
-                    el.style.top = data[id].top;
-                    el.style.left = data[id].left;
-                }
-            });
-        }
-    });
+    // Navigation
+    document.getElementById('goApply').onclick = () => window.location.href = "apply.html";
+    document.getElementById('goContact').onclick = () => window.location.href = "contact.html";
 
-    const draggables = document.querySelectorAll('.draggable');
-    draggables.forEach(btn => {
-        let isDragging = false;
-        btn.addEventListener('mousedown', e => {
-            if (!isEditMode) return;
-            isDragging = true;
-            btn.style.zIndex = 1000;
-        });
-
-        document.addEventListener('mousemove', e => {
-            if (!isDragging || !isEditMode) return;
-            // Convert to % for better saving
-            let leftPercent = (e.clientX / window.innerWidth) * 100;
-            let topPercent = (e.clientY / window.innerHeight) * 100;
-            btn.style.left = leftPercent + '%';
-            btn.style.top = topPercent + '%';
-        });
-
-        document.addEventListener('mouseup', () => { isDragging = false; });
-
-        btn.onclick = () => {
-            if (isEditMode) return;
-            if (btn.id === 'btnApply') window.location.href = "apply.html";
-            if (btn.id === 'btnContact') window.location.href = "contact.html";
-        };
-    });
-
-    document.getElementById('publishBtn').onclick = function() {
-        const positions = {};
-        draggables.forEach(btn => {
-            positions[btn.id] = { top: btn.style.top, left: btn.style.left };
-        });
-        set(ref(db, 'layout/positions'), positions).then(() => {
-            showMsg("Saved!", "#22c55e");
-            toggleEditMode();
-        });
-    };
-
-    window.toggleEditMode = function() {
-        isEditMode = !isEditMode;
-        draggables.forEach(btn => btn.classList.toggle('admin-active'));
-        document.getElementById('publishBtn').style.display = isEditMode ? 'block' : 'none';
-        document.getElementById('editToggleLink').innerText = isEditMode ? "🛑 Stop" : "🖱️ Edit Layout";
-    };
-    document.getElementById('editToggleLink').onclick = toggleEditMode;
-
+    // Initial Load
     if (localStorage.getItem("isAdmin") === "true") {
-        document.getElementById("adminMenu").style.display = "block";
-        document.getElementById("grantBtn").style.display = "none";
+        showAdminFeatures();
     }
 </script>
 
 <script>
-    function toggleNav() { var s = document.getElementById("mySidebar"); s.style.width = s.style.width === "250px" ? "0" : "250px"; }
-    function signOutAdmin() { localStorage.removeItem("isAdmin"); location.reload(); }
-    function showMsg(t, c) { var m = document.getElementById('messageBox'); m.innerText = t; m.style.backgroundColor = c; m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 3000); }
+    function toggleNav() {
+        var sidebar = document.getElementById("mySidebar");
+        sidebar.style.width = sidebar.style.width === "250px" ? "0" : "250px";
+    }
+
+    function showAdminFeatures() {
+        document.getElementById("adminMenu").style.display = "block";
+        document.getElementById("grantBtn").style.display = "none";
+    }
+
+    function signOutAdmin() {
+        localStorage.removeItem("isAdmin");
+        document.getElementById("adminMenu").style.display = "none";
+        document.getElementById("grantBtn").style.display = "block";
+        showMsg("Signed out as Admin.", "#ff4757");
+    }
+
+    function showMsg(text, color) {
+        var msgBox = document.getElementById('messageBox');
+        msgBox.innerText = text;
+        msgBox.style.backgroundColor = color;
+        msgBox.style.display = 'block';
+        setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
+    }
+
     function viewApplications() { window.open("https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit", "_blank"); }
 
+    /* Snow Script */
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
@@ -211,11 +160,19 @@
     let snowflakes = [];
     for(let i=0;i<120;i++){ snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*3+1, d: Math.random()*1.5 }); }
     function drawSnow(){
-        ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "white"; ctx.beginPath();
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "white";
+        ctx.beginPath();
         for(let f of snowflakes){ ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true); }
-        ctx.fill(); moveSnow();
+        ctx.fill();
+        moveSnow();
     }
-    function moveSnow(){ for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; } } }
+    function moveSnow(){
+        for(let f of snowflakes){
+            f.y += f.d;
+            if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; }
+        }
+    }
     setInterval(drawSnow, 25);
 </script>
 </body>
