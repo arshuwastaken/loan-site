@@ -16,20 +16,52 @@
         .sidebar a:hover { color: #22c55e; padding-left: 35px; }
 
         /* Professional Modal */
-        #adminModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
+        #adminModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 1000; justify-content: center; align-items: center; }
         .modal-content { background: #1e293b; padding: 25px; border-radius: 15px; text-align: center; border: 1px solid rgba(255,255,255,0.2); width: 300px; }
-        .modal-content input { width: 80%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
-        .modal-btn { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; margin: 5px; }
+        .modal-content h3 { margin-top: 0; }
+        .modal-content input { width: 85%; padding: 12px; margin: 15px 0; border-radius: 8px; border: none; background: #0f172a; color: white; font-size: 16px; outline: none; }
+        .modal-btn { padding: 10px 20px; border-radius: 5px; border: none; cursor: pointer; font-weight: 600; margin: 5px; transition: 0.2s; }
+        .modal-btn:active { transform: scale(0.95); }
 
         /* Message Box */
-        #messageBox { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; display: none; z-index: 2000; animation: fadeIn 0.5s; }
+        #messageBox { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); padding: 15px 25px; border-radius: 8px; color: white; font-weight: 600; display: none; z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
 
-        .content-container { text-align: center; }
-        .logo { width: 250px; height: auto; margin-bottom: 25px; }
-        h1 { font-size: 32px; font-weight: 600; margin-bottom: 30px; }
-        .btn-box { display: flex; gap: 20px; justify-content: center; }
-        .btn { padding: 14px 26px; border: 2px solid white; border-radius: 10px; cursor: pointer; background: transparent; color: white; transition: 0.3s; backdrop-filter: blur(5px); }
-        .btn:hover { background: rgba(255,255,255,0.12); transform: translateY(-2px); }
+        .content-container { text-align: center; width: 100%; height: 100%; position: relative; }
+        .logo { width: 250px; height: auto; margin-top: 10vh; pointer-events: none; }
+        h1 { font-size: 32px; font-weight: 600; margin-top: 20px; pointer-events: none; }
+
+        /* Draggable Buttons */
+        .btn { 
+            position: absolute; 
+            padding: 14px 26px; 
+            border: 2px solid white; 
+            border-radius: 10px; 
+            cursor: pointer; 
+            background: transparent; 
+            color: white; 
+            backdrop-filter: blur(5px); 
+            transition: background 0.3s, transform 0.2s; 
+            white-space: nowrap;
+            z-index: 10;
+        }
+        .btn:hover { background: rgba(255,255,255,0.1); }
+        .admin-active { border: 2px dashed #f1c40f !important; cursor: grab !important; box-shadow: 0 0 15px #f1c40f; }
+
+        #publishBtn { 
+            display: none; 
+            position: fixed; 
+            bottom: 25px; 
+            right: 25px; 
+            background: #22c55e; 
+            color: white; 
+            padding: 12px 24px; 
+            border-radius: 50px; 
+            border: none; 
+            font-weight: 600; 
+            cursor: pointer; 
+            z-index: 1000; 
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
     </style>
 </head>
 
@@ -38,12 +70,15 @@
 <canvas id="snow"></canvas>
 <div id="messageBox"></div>
 
+<!-- Admin Publish Button -->
+<button id="publishBtn">💾 Publish Changes</button>
+
 <div id="adminModal">
     <div class="modal-content">
-        <h3>Enter Admin Code</h3>
-        <input type="password" id="adminInput" maxlength="6" placeholder="6-digit code">
+        <h3>Admin Verification</h3>
+        <input type="password" id="adminInput" placeholder="Enter Secure Code">
         <br>
-        <button class="modal-btn" onclick="checkAdmin()" style="background:#22c55e; color:white;">Submit</button>
+        <button class="modal-btn" id="submitAdminBtn" style="background:#22c55e; color:white;">Submit</button>
         <button class="modal-btn" onclick="document.getElementById('adminModal').style.display='none'" style="background:#ef4444; color:white;">Cancel</button>
     </div>
 </div>
@@ -55,72 +90,158 @@
     <a href="#">Applied Loans</a>
     <a href="#">Previous Loan History</a>
     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.2); margin: 10px 20px;">
-    <a href="#" id="grantBtn" onclick="promptAdmin()">Grant Admin</a>
+    <a href="#" id="grantBtn" onclick="document.getElementById('adminModal').style.display='flex'">Grant Admin</a>
     <div id="adminMenu" style="display:none;">
-        <a href="#" onclick="viewApplications()" style="color: #22c55e;">📋 View Loan Applications</a>
-        <a href="#" onclick="signOutAdmin()" style="color: #ff4757;">🚪 Sign Out as Admin</a>
+        <a href="#" onclick="viewApplications()" style="color: #22c55e;">📋 View Applications</a>
+        <a href="#" id="editToggleLink" style="color: #f1c40f;">🖱️ Start Editing Layout</a>
+        <a href="#" onclick="signOutAdmin()" style="color: #ff4757;">🚪 Sign Out</a>
     </div>
 </div>
 
-<div class="content-container">
+<div class="content-container" id="mainArea">
     <img src="logo.png" alt="Star Choice Logo" class="logo">
     <h1>Star Choice Finserv🌐</h1>
-    <div class="btn-box">
-        <button class="btn" onclick="goApply()">💰 Apply For Loan</button>
-        <button class="btn" onclick="goContact()">📞 Contact Us</button>
-    </div>
+    
+    <button class="btn draggable" id="btnApply" style="top: 50%; left: 35%;">💰 Apply For Loan</button>
+    <button class="btn draggable" id="btnContact" style="top: 50%; left: 55%;">📞 Contact Us</button>
 </div>
 
-<script>
-    const ADMIN_CODE = "201413"; 
+<!-- Firebase Logic -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+    import { getDatabase, ref, set, onValue, get } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
-    window.onload = function() {
-        if (localStorage.getItem("isAdmin") === "true") showAdminFeatures();
+    const firebaseConfig = {
+        apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
+        authDomain: "star-choice-finserv.firebaseapp.com",
+        projectId: "star-choice-finserv",
+        storageBucket: "star-choice-finserv.firebasestorage.app",
+        messagingSenderId: "724236316044",
+        appId: "1:724236316044:web:f20c2a4466d8c22d117aa9",
+        databaseURL: "https://star-choice-finserv-default-rtdb.firebaseio.com"
     };
 
-    function toggleNav() {
-        var sidebar = document.getElementById("mySidebar");
-        sidebar.style.width = sidebar.style.width === "250px" ? "0" : "250px";
-    }
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    let isEditMode = false;
 
-    function promptAdmin() { document.getElementById("adminModal").style.display = "flex"; }
-
-    function checkAdmin() {
-        let input = document.getElementById("adminInput").value;
-        if (input === ADMIN_CODE) {
-            localStorage.setItem("isAdmin", "true");
-            showAdminFeatures();
-            showMsg("Admin Access Granted!", "#22c55e");
-            document.getElementById("adminModal").style.display = "none";
-            document.getElementById("adminInput").value = "";
-        } else {
-            showMsg("Invalid Code!", "#ef4444");
+    // --- Admin Check (Securely fetching from Firebase) ---
+    window.checkAdmin = async function() {
+        const inputCode = document.getElementById("adminInput").value;
+        const adminRef = ref(db, 'admin/code');
+        
+        try {
+            const snapshot = await get(adminRef);
+            if (snapshot.exists() && snapshot.val() === inputCode) {
+                localStorage.setItem("isAdmin", "true");
+                showMsg("Access Granted!", "#22c55e");
+                location.reload();
+            } else {
+                showMsg("Invalid Secure Code!", "#ef4444");
+            }
+        } catch (e) {
+            showMsg("Database Error!", "#ef4444");
         }
     }
+    document.getElementById('submitAdminBtn').onclick = checkAdmin;
 
-    function showAdminFeatures() {
+    // --- Sync Positions from Database ---
+    const posRef = ref(db, 'layout/positions');
+    onValue(posRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            Object.keys(data).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.style.top = data[id].top;
+                    el.style.left = data[id].left;
+                }
+            });
+        }
+    });
+
+    // --- Drag and Drop Logic ---
+    const draggables = document.querySelectorAll('.draggable');
+    draggables.forEach(btn => {
+        let isDragging = false;
+        
+        btn.addEventListener('mousedown', e => {
+            if (!isEditMode) return;
+            isDragging = true;
+            btn.style.zIndex = 1000;
+        });
+
+        document.addEventListener('mousemove', e => {
+            if (!isDragging || !isEditMode) return;
+            btn.style.left = e.clientX - btn.offsetWidth / 2 + 'px';
+            btn.style.top = e.clientY - btn.offsetHeight / 2 + 'px';
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            btn.style.zIndex = 10;
+        });
+
+        // Link logic
+        btn.onclick = () => {
+            if (isEditMode) return;
+            if (btn.id === 'btnApply') window.location.href = "apply.html";
+            if (btn.id === 'btnContact') window.location.href = "contact.html";
+        };
+    });
+
+    // --- Save Positions ---
+    document.getElementById('publishBtn').onclick = function() {
+        const positions = {};
+        draggables.forEach(btn => {
+            positions[btn.id] = { top: btn.style.top, left: btn.style.left };
+        });
+        set(ref(db, 'layout/positions'), positions)
+            .then(() => {
+                showMsg("Layout Saved Permanently!", "#22c55e");
+                toggleEditMode();
+            });
+    };
+
+    // --- Toggle Layout Editor ---
+    window.toggleEditMode = function() {
+        isEditMode = !isEditMode;
+        draggables.forEach(btn => btn.classList.toggle('admin-active'));
+        document.getElementById('publishBtn').style.display = isEditMode ? 'block' : 'none';
+        document.getElementById('editToggleLink').innerText = isEditMode ? "🛑 Stop Editing" : "🖱️ Start Editing Layout";
+    };
+    document.getElementById('editToggleLink').onclick = toggleEditMode;
+
+    // Load Admin State
+    if (localStorage.getItem("isAdmin") === "true") {
         document.getElementById("adminMenu").style.display = "block";
         document.getElementById("grantBtn").style.display = "none";
+    }
+</script>
+
+<script>
+    // Standard UI Functions
+    function toggleNav() {
+        var s = document.getElementById("mySidebar");
+        s.style.width = s.style.width === "250px" ? "0" : "250px";
     }
 
     function signOutAdmin() {
         localStorage.removeItem("isAdmin");
-        document.getElementById("adminMenu").style.display = "none";
-        document.getElementById("grantBtn").style.display = "block";
-        showMsg("Signed out as Admin.", "#ff4757");
+        location.reload();
     }
 
-    function showMsg(text, color) {
-        var msgBox = document.getElementById('messageBox');
-        msgBox.innerText = text;
-        msgBox.style.backgroundColor = color;
-        msgBox.style.display = 'block';
-        setTimeout(() => { msgBox.style.display = 'none'; }, 3000);
+    function showMsg(t, c) {
+        var m = document.getElementById('messageBox');
+        m.innerText = t;
+        m.style.backgroundColor = c;
+        m.style.display = 'block';
+        setTimeout(() => m.style.display = 'none', 3000);
     }
 
-    function viewApplications() { window.open("https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit", "_blank"); }
-    function goApply(){ window.location.href = "apply.html"; }
-    function goContact(){ window.location.href = "contact.html"; }
+    function viewApplications() { 
+        window.open("https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit", "_blank"); 
+    }
 
     /* Snow Script */
     const canvas = document.getElementById("snow");
