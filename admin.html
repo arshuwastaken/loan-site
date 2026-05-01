@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Star Choice - Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: #0f172a; color: white; min-height: 100vh; }
+        body::before { content: ""; position: fixed; inset: 0; background: url('bg.png') center/cover no-repeat; z-index: -2; opacity: 0.4; }
+        
+        .container { max-width: 900px; margin: auto; padding: 40px 20px; position: relative; z-index: 1; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        
+        .btn-main { background: #22c55e; color: white; border: none; padding: 14px 28px; border-radius: 10px; cursor: pointer; font-weight: 600; font-family: 'Poppins'; transition: 0.3s; margin-bottom: 30px; width: 100%; font-size: 16px; box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3); }
+        .btn-main:hover { transform: translateY(-2px); background: #16a34a; }
+
+        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); position: relative; transition: 0.3s; animation: slideIn 0.5s ease-out; }
+        .app-card:hover { border-color: #22c55e; }
+
+        .status-badge { position: absolute; top: 20px; right: 20px; padding: 6px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; background: #f1c40f; color: #000; }
+        
+        .detail { margin: 8px 0; font-size: 15px; color: #cbd5e1; }
+        .detail b { color: #f8fafc; margin-right: 10px; }
+
+        #accessDenied { display: none; text-align: center; padding-top: 150px; }
+        #adminContent { display: none; }
+        .btn-logout { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 1. Security Guard -->
+    <div id="accessDenied">
+        <h1 style="font-size: 50px;">🚫</h1>
+        <h2>Access Denied</h2>
+        <p>Aapke paas is page ko dekhne ki permission nahi hai.</p>
+        <button class="btn-main" onclick="window.location.href='index.html'" style="width: auto;">Go Home</button>
+    </div>
+
+    <!-- 2. Admin Panel -->
+    <div id="adminContent">
+        <div class="header">
+            <h2 style="margin:0;">Admin Panel 🔐</h2>
+            <button class="btn-logout" onclick="logout()">Sign Out</button>
+        </div>
+
+        <!-- Yahi wo button hai jo tumne manga tha -->
+        <button class="btn-main" id="fetchBtn" onclick="loadApplications()">🔍 Check Applications on Website</button>
+
+        <div id="applicationsList">
+            <!-- Data yahan load hoga -->
+            <p style="text-align: center; color: #94a3b8;">Click the button above to sync data.</p>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+    import { getDatabase, ref, onValue, get } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
+        authDomain: "star-choice-finserv.firebaseapp.com",
+        projectId: "star-choice-finserv",
+        storageBucket: "star-choice-finserv.firebasestorage.app",
+        messagingSenderId: "724236316044",
+        appId: "1:724236316044:web:f20c2a4466d8c22d117aa9",
+        databaseURL: "https://star-choice-finserv-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Security Check: LocalStorage + Firebase Verification
+    async function verifyAdmin() {
+        const isAdmin = localStorage.getItem("isAdmin");
+        if (isAdmin === "true") {
+            document.getElementById("adminContent").style.display = "block";
+        } else {
+            document.getElementById("accessDenied").style.display = "block";
+        }
+    }
+    verifyAdmin();
+
+    // Data Load Karne ka Function
+    window.loadApplications = function() {
+        const fetchBtn = document.getElementById("fetchBtn");
+        fetchBtn.innerText = "🔄 Syncing Data...";
+        fetchBtn.style.opacity = "0.7";
+
+        const appRef = ref(db, 'applications');
+        
+        // onValue matlab jab bhi koi apply.html se form bharega, ye apne aap update ho jayega
+        onValue(appRef, (snapshot) => {
+            const data = snapshot.val();
+            const listDiv = document.getElementById("applicationsList");
+            listDiv.innerHTML = "";
+            
+            fetchBtn.innerText = "✅ Data Synced Successfully";
+            setTimeout(() => { fetchBtn.innerText = "🔍 Check Applications on Website"; fetchBtn.style.opacity = "1"; }, 2000);
+
+            if (!data) {
+                listDiv.innerHTML = "<div class='app-card' style='text-align:center;'>Abhi tak koi application nahi aayi hai.</div>";
+                return;
+            }
+
+            // Data ko reverse order mein dikhayenge (Newest first)
+            const keys = Object.keys(data).reverse();
+            keys.forEach(id => {
+                const application = data[id];
+                const card = `
+                    <div class="app-card">
+                        <span class="status-badge">${application.status || 'New'}</span>
+                        <div class="detail"><b>👤 Name:</b> ${application.name}</div>
+                        <div class="detail"><b>📞 Phone:</b> ${application.phone}</div>
+                        <div class="detail"><b>💰 Amount:</b> ₹${application.amount}</div>
+                        <div class="detail"><b>🏠 Address:</b> ${application.address || 'Not Provided'}</div>
+                        <div class="detail"><b>📅 Applied On:</b> ${new Date(application.timestamp).toLocaleString()}</div>
+                    </div>
+                `;
+                listDiv.innerHTML += card;
+            });
+        });
+    };
+
+    window.logout = () => {
+        localStorage.removeItem("isAdmin");
+        window.location.href = "index.html";
+    };
+</script>
+
+</body>
+</html>
