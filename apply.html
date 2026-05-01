@@ -42,7 +42,6 @@
             text-align: center;
         }
 
-        /* Message Box Style */
         #messageBox {
             position: fixed;
             top: 20px;
@@ -60,13 +59,13 @@
         input::placeholder { color: rgba(255,255,255,0.6); }
         button { width: 90%; padding: 12px; margin-top: 15px; background: rgba(34, 197, 94, 0.8); border: none; border-radius: 8px; color: white; font-weight: 600; cursor: pointer; transition: 0.3s; }
         button:hover { transform: translateY(-3px); background: rgba(34, 197, 94, 1); }
+        button:disabled { background: #4b5563; cursor: not-allowed; }
     </style>
 </head>
 
 <body>
 
 <canvas id="snow"></canvas>
-
 <div id="messageBox"></div>
 
 <div class="box">
@@ -74,30 +73,79 @@
     <input type="text" id="name" placeholder="Full Name">
     <input type="number" id="amount" placeholder="Loan Amount">
     <input type="text" id="phone" placeholder="Mobile Number">
-    <button onclick="apply()">Submit Application</button>
+    <button id="submitBtn" onclick="apply()">Submit Application</button>
 </div>
 
-<script>
-    function apply(){
-        var name = document.getElementById('name').value;
-        var amount = document.getElementById('amount').value;
-        var phone = document.getElementById('phone').value;
-        
-        var url = "https://script.google.com/macros/s/AKfycbx-2CS_gmfKjUdrcIJ8wnUSKIF5EUFuT95cH20fZpo5ikI4z0_42EGV9t3YIdy52aMJ/exec";
-        
-        // mode: 'no-cors' use kiya hai taaki network error na aaye
-        fetch(url + "?name=" + name + "&amount=" + amount + "&phone=" + phone, { mode: 'no-cors' })
-        .then(() => {
-            showMsg("Application submitted successfully!", "#22c55e");
-            document.getElementById('name').value = '';
-            document.getElementById('amount').value = '';
-            document.getElementById('phone').value = '';
-        })
-        .catch(() => {
-            showMsg("Error: Please check your connection.", "#ef4444");
-        });
-    }
+<!-- Firebase Logic -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+    import { getDatabase, ref, push, set } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
+    const firebaseConfig = {
+        apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
+        authDomain: "star-choice-finserv.firebaseapp.com",
+        projectId: "star-choice-finserv",
+        storageBucket: "star-choice-finserv.firebasestorage.app",
+        messagingSenderId: "724236316044",
+        appId: "1:724236316044:web:f20c2a4466d8c22d117aa9",
+        databaseURL: "https://star-choice-finserv-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    window.apply = async function() {
+        var name = document.getElementById('name').value.trim();
+        var amount = document.getElementById('amount').value.trim();
+        var phone = document.getElementById('phone').value.trim();
+        var btn = document.getElementById('submitBtn');
+
+        if(!name || !amount || !phone) {
+            showMsg("Please fill all fields!", "#ef4444");
+            return;
+        }
+
+        btn.disabled = true;
+        btn.innerText = "Sending...";
+
+        try {
+            // 1. Firebase pe data bhejna (Admin Panel ke liye)
+            const appRef = ref(db, 'applications');
+            const newAppRef = push(appRef);
+            await set(newAppRef, {
+                name: name,
+                amount: amount,
+                phone: phone,
+                status: "Pending",
+                timestamp: Date.now()
+            });
+
+            // 2. Google Sheets pe data bhejna
+            var sheetUrl = "https://script.google.com/macros/s/AKfycbx-2CS_gmfKjUdrcIJ8wnUSKIF5EUFuT95cH20fZpo5ikI4z0_42EGV9t3YIdy52aMJ/exec";
+            
+            fetch(sheetUrl + "?name=" + encodeURIComponent(name) + "&amount=" + amount + "&phone=" + phone, { mode: 'no-cors' })
+            .then(() => {
+                showMsg("Application submitted successfully!", "#22c55e");
+                // Fields clear karna
+                document.getElementById('name').value = '';
+                document.getElementById('amount').value = '';
+                document.getElementById('phone').value = '';
+                
+                setTimeout(() => { window.location.href = "index.html"; }, 2000);
+            })
+            .catch(() => {
+                showMsg("Sheet Error, but Dashboard updated!", "#f1c40f");
+            });
+
+        } catch (error) {
+            showMsg("Error occurred. Try again.", "#ef4444");
+            btn.disabled = false;
+            btn.innerText = "Submit Application";
+        }
+    }
+</script>
+
+<script>
     function showMsg(text, color) {
         var msgBox = document.getElementById('messageBox');
         msgBox.innerText = text;
