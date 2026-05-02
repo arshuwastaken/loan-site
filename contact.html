@@ -10,6 +10,7 @@
         body {
             margin: 0;
             font-family: 'Poppins', sans-serif;
+            /* Default background agar Firebase load na ho */
             background: url('bg.png') center/cover no-repeat;
             color: white;
             height: 100vh;
@@ -19,6 +20,7 @@
             align-items: center;
             animation: fadeIn 0.8s ease-in;
             overflow: hidden;
+            transition: background 0.5s ease-in-out; /* Smooth transition */
         }
 
         @keyframes fadeIn {
@@ -87,7 +89,38 @@
     <a class="btn tg" href="https://t.me/@EXAMPLEUSERNAME" target="_blank">📩 Telegram</a>
     <a class="btn wa" href="https://wa.me/1234567890" target="_blank">💬 WhatsApp</a>
     <a class="btn gm" href="mailto:EXAMPLE@GMAIL.COM">📧 Gmail</a>
+    <button class="btn" onclick="window.location.href='index.html'" style="background: rgba(255,255,255,0.1); margin-top: 20px; border: 1px dashed white;">🏠 Back to Home</button>
 </div>
+
+<!-- Firebase Dynamic Background Logic -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
+        authDomain: "star-choice-finserv.firebaseapp.com",
+        projectId: "star-choice-finserv",
+        storageBucket: "star-choice-finserv.firebasestorage.app",
+        messagingSenderId: "724236316044",
+        appId: "1:724236316044:web:f20c2a4466d8c22d117aa9",
+        databaseURL: "https://star-choice-finserv-default-rtdb.firebaseio.com/"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Dynamic Background Listener
+    const bgRef = ref(db, 'settings/backgroundUrl');
+    onValue(bgRef, (snapshot) => {
+        const url = snapshot.val();
+        if (url) {
+            document.body.style.backgroundImage = `url('${url}')`;
+        } else {
+            document.body.style.backgroundImage = "url('bg.png')";
+        }
+    });
+</script>
 
 <script>
     /* Same Snow Script */
