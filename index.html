@@ -6,9 +6,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        body { margin: 0; font-family: 'Poppins', sans-serif; color: white; overflow: hidden; background: url('bg.png') center/cover no-repeat; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        body { 
+            margin: 0; 
+            font-family: 'Poppins', sans-serif; 
+            color: white; 
+            overflow: hidden; 
+            /* Default background */
+            background: url('bg.png') center/cover no-repeat; 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: center; 
+            align-items: center; 
+            transition: background 0.5s ease-in-out; /* Smooth change logic */
+        }
         body::after { content: ""; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: -2; }
         canvas { position: fixed; inset: 0; z-index: -1; }
+        
         .menu-icon { position: absolute; top: 20px; left: 20px; font-size: 30px; cursor: pointer; z-index: 100; }
         
         .sidebar { height: 100%; width: 0; position: fixed; top: 0; left: 0; background: rgba(0,0,0,0.85); backdrop-filter: blur(15px); overflow-x: hidden; transition: 0.5s; padding-top: 80px; z-index: 50; border-right: 1px solid rgba(255,255,255,0.1); }
@@ -80,7 +94,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+    import { getDatabase, ref, get, onValue } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
@@ -94,6 +108,17 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+
+    // --- Dynamic Background Listener ---
+    const bgRef = ref(db, 'settings/backgroundUrl');
+    onValue(bgRef, (snapshot) => {
+        const url = snapshot.val();
+        if (url) {
+            document.body.style.backgroundImage = `url('${url}')`;
+        } else {
+            document.body.style.backgroundImage = "url('bg.png')";
+        }
+    });
 
     window.checkAdmin = async function() {
         const inputCode = document.getElementById("adminInput").value.trim();
@@ -128,11 +153,13 @@
     }
 
     function showAdminFeatures() {
-        document.getElementById("adminMenu").style.display = "block";
-        document.getElementById("grantBtn").style.display = "none";
+        const menu = document.getElementById("adminMenu");
+        const btn = document.getElementById("grantBtn");
+        if(menu) menu.style.display = "block";
+        if(btn) btn.style.display = "none";
     }
 
-    function signOutAdmin() {
+    window.signOutAdmin = function() {
         localStorage.removeItem("isAdmin");
         document.getElementById("adminMenu").style.display = "none";
         document.getElementById("grantBtn").style.display = "block";
