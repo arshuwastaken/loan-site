@@ -5,109 +5,111 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
     <style>
-        /* Smooth Page Fade-In */
         html { opacity: 0; animation: fadeInPage 0.8s ease-in forwards; }
         @keyframes fadeInPage { from { opacity: 0; } to { opacity: 1; } }
 
         body { margin: 0; font-family: 'Poppins', sans-serif; background: #0f172a; color: white; min-height: 100vh; overflow-x: hidden; }
-        body::before { content: ""; position: fixed; inset: 0; background: url('bg.png') center/cover no-repeat; z-index: -2; opacity: 0.4; transition: background 0.5s ease; }
+        body::before { content: ""; position: fixed; inset: 0; background: url('bg.png') center/cover no-repeat; z-index: -2; opacity: 0.4; transition: 0.5s; }
         
         canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
-
         .container { max-width: 900px; margin: auto; padding: 40px 20px; position: relative; z-index: 1; }
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         
         /* Settings Section */
-        .settings-card { background: rgba(30, 41, 59, 0.9); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #22c55e; }
-        .input-group { display: flex; gap: 10px; margin-top: 15px; }
-        input[type="text"] { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; }
-
-        .admin-actions { display: flex; gap: 15px; margin-bottom: 30px; }
+        .settings-card { background: rgba(30, 41, 59, 0.9); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #22c55e; text-align: center; }
         
-        .btn-main { 
-            flex: 1; 
-            background: #22c55e; 
-            color: white; 
-            border: none; 
-            padding: 14px 20px; 
-            border-radius: 10px; 
+        .upload-area { 
+            border: 2px dashed rgba(34, 197, 94, 0.5); 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-top: 15px; 
             cursor: pointer; 
-            font-weight: 600; 
-            font-family: 'Poppins'; 
-            transition: 0.3s; 
-            font-size: 15px; 
-            box-shadow: 0 4px 15px rgba(34, 197, 94, 0.2); 
-            text-align: center; 
-            text-decoration: none; 
-            display: flex; 
-            align-items: center; 
-            justify-content: center; 
-            gap: 10px; 
+            transition: 0.3s;
         }
-        
-        .btn-main:hover { transform: translateY(-2px); background: #16a34a; box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4); }
-        .btn-sheets { background: #10a34a; }
+        .upload-area:hover { background: rgba(34, 197, 94, 0.1); border-color: #22c55e; }
 
-        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); position: relative; transition: 0.3s; animation: slideIn 0.5s ease-out; }
-        .app-card:hover { border-color: #22c55e; transform: scale(1.01); }
+        /* Custom Popup Modal */
+        #customAlert { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0,0,0,0.8); 
+            z-index: 9999; 
+            justify-content: center; 
+            align-items: center; 
+        }
+        .alert-box { 
+            background: #1e293b; 
+            padding: 30px; 
+            border-radius: 15px; 
+            text-align: center; 
+            border: 1px solid #22c55e; 
+            width: 320px; 
+            animation: popUp 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
+        .btn-main { 
+            background: #22c55e; color: white; border: none; padding: 12px 20px; border-radius: 10px; 
+            cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px; margin-top: 10px;
+        }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
+
+        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); position: relative; }
         .status-badge { position: absolute; top: 20px; right: 20px; padding: 6px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; background: #f1c40f; color: #000; }
-        
-        .detail { margin: 8px 0; font-size: 15px; color: #cbd5e1; }
-        .detail b { color: #f8fafc; margin-right: 10px; }
+        .detail { margin: 8px 0; font-size: 14px; color: #cbd5e1; }
 
         #accessDenied { display: none; text-align: center; padding-top: 150px; }
         #adminContent { display: none; }
-        .btn-logout { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 13px; transition: 0.3s; }
-        .btn-logout:hover { background: #dc2626; }
-
-        @keyframes slideIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-
-        @media (max-width: 600px) { .admin-actions { flex-direction: column; } .input-group { flex-direction: column; } }
     </style>
 </head>
 <body>
 
 <canvas id="snow"></canvas>
 
+<!-- Custom Popup Modal -->
+<div id="customAlert">
+    <div class="alert-box">
+        <h3 id="alertTitle" style="margin-top:0;">Notification</h3>
+        <p id="alertMsg"></p>
+        <button class="btn-main" onclick="closeAlert()">Okay, Got it!</button>
+    </div>
+</div>
+
 <div class="container">
     <div id="accessDenied">
-        <h1 style="font-size: 50px;">🚫</h1>
-        <h2>Access Denied</h2>
-        <p>Aapke paas is page ko dekhne ki permission nahi hai.</p>
-        <button class="btn-main" onclick="window.location.href='index.html'" style="width: auto; margin: auto;">Go Home</button>
+        <h1>🚫 Access Denied</h1>
+        <button class="btn-main" onclick="window.location.href='index.html'">Go Home</button>
     </div>
 
     <div id="adminContent">
         <div class="header">
             <h2 style="margin:0;">Admin Panel 🔐</h2>
-            <button class="btn-logout" onclick="logout()">Sign Out</button>
+            <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">Sign Out</button>
         </div>
 
-        <!-- NEW: Background Settings Section -->
+        <!-- Background Settings -->
         <div class="settings-card">
-            <h3 style="margin-top:0;">Website Settings ⚙️</h3>
-            <p style="font-size: 14px; color: #94a3b8;">Change background image for all pages:</p>
-            <div class="input-group">
-                <input type="text" id="bgUrlInput" placeholder="Paste image direct URL here (e.g. https://site.com/image.jpg)">
-                <button class="btn-main" onclick="updateBackground()" style="flex: none; width: 150px;">Update BG</button>
-            </div>
-        </div>
-
-        <div class="admin-actions">
-            <button class="btn-main" id="fetchBtn" onclick="loadApplications()">🔍 Sync Website Data</button>
+            <h3 style="margin:0;">Website Appearance 🖼️</h3>
+            <p style="color: #94a3b8; font-size: 14px;">Upload background image from your computer:</p>
             
-            <a href="https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit" 
-               target="_blank" class="btn-main btn-sheets">
-               <img src="https://www.gstatic.com/images/branding/product/1x/sheets_2020q4_48dp.png" width="20" alt="Sheets" style="filter: brightness(0) invert(1);">
-               View on Sheets 🚀
-            </a>
+            <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                <p id="fileName">Click to select image file</p>
+                <input type="file" id="fileInput" hidden accept="image/*" onchange="handleFile(this)">
+            </div>
+            
+            <button class="btn-main" id="uploadBtn" onclick="uploadBG()" style="width: 100%; justify-content: center; margin-top: 20px;">
+                🚀 Apply New Background
+            </button>
         </div>
 
-        <div id="applicationsList">
-            <p style="text-align: center; color: #94a3b8;">Click "Sync Website Data" to fetch latest records.</p>
+        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+            <button class="btn-main" id="fetchBtn" onclick="loadApplications()" style="flex:1;">🔍 Sync Data</button>
+            <a href="https://docs.google.com/spreadsheets/d/1UZs2_kd8iF0lBXaaSiRDJNoPlelvCgqbFSGyxw2E8nU/edit" target="_blank" class="btn-main" style="flex:1; background:#10a34a; text-decoration:none;">📂 Sheets</a>
         </div>
+
+        <div id="applicationsList"></div>
     </div>
 </div>
 
@@ -128,99 +130,102 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Verify Admin Login
-    async function verifyAdmin() {
-        const isAdmin = localStorage.getItem("isAdmin");
-        if (isAdmin === "true") {
-            document.getElementById("adminContent").style.display = "block";
-        } else {
-            document.getElementById("accessDenied").style.display = "block";
-        }
-    }
-    verifyAdmin();
+    let selectedBase64 = "";
 
-    // UPDATE BACKGROUND FUNCTION
-    window.updateBackground = function() {
-        const url = document.getElementById("bgUrlInput").value;
-        if(!url) { alert("Please enter a URL first!"); return; }
-        
+    // Login Check
+    if (localStorage.getItem("isAdmin") === "true") {
+        document.getElementById("adminContent").style.display = "block";
+    } else {
+        document.getElementById("accessDenied").style.display = "block";
+    }
+
+    // Handle File Selection
+    window.handleFile = function(input) {
+        const file = input.files[0];
+        if (file) {
+            if (file.size > 1000000) { // 1MB Limit for DB safety
+                showAlert("File Too Large", "Bhai, image 1MB se choti rakho taaki site fast chale!", "#ef4444");
+                input.value = "";
+                return;
+            }
+            document.getElementById("fileName").innerText = "Selected: " + file.name;
+            const reader = new FileReader();
+            reader.onload = (e) => { selectedBase64 = e.target.result; };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    // Upload to Firebase
+    window.uploadBG = function() {
+        if (!selectedBase64) {
+            showAlert("No File", "Pehle koi image select toh kar lo bhai!", "#f1c40f");
+            return;
+        }
+
+        const uploadBtn = document.getElementById("uploadBtn");
+        uploadBtn.innerText = "⏳ Uploading...";
+        uploadBtn.disabled = true;
+
         const bgRef = ref(db, 'settings/backgroundUrl');
-        set(bgRef, url).then(() => {
-            alert("Background updated successfully for all pages!");
-            document.getElementById("bgUrlInput").value = "";
-        }).catch((error) => {
-            alert("Error updating background: " + error.message);
+        set(bgRef, selectedBase64).then(() => {
+            showAlert("Success! 🎉", "Background change ho gaya! Ab sabhi pages par yahi dikhega.", "#22c55e");
+            uploadBtn.innerText = "🚀 Apply New Background";
+            uploadBtn.disabled = false;
+        }).catch(err => {
+            showAlert("Error", "Kuch gadbad ho gayi!", "#ef4444");
+            uploadBtn.disabled = false;
         });
     };
 
-    // LOAD APPLICATIONS
-    window.loadApplications = function() {
-        const fetchBtn = document.getElementById("fetchBtn");
-        fetchBtn.innerText = "🔄 Syncing...";
-        fetchBtn.style.opacity = "0.7";
+    // Global Functions for UI
+    window.showAlert = (title, msg, color) => {
+        document.getElementById("alertTitle").innerText = title;
+        document.getElementById("alertTitle").style.color = color;
+        document.getElementById("alertMsg").innerText = msg;
+        document.getElementById("customAlert").style.display = "flex";
+    };
 
-        const appRef = ref(db, 'applications');
-        
-        onValue(appRef, (snapshot) => {
+    window.closeAlert = () => { document.getElementById("customAlert").style.display = "none"; };
+    
+    window.logout = () => { localStorage.removeItem("isAdmin"); window.location.href="index.html"; };
+
+    window.loadApplications = function() {
+        onValue(ref(db, 'applications'), (snapshot) => {
             const data = snapshot.val();
             const listDiv = document.getElementById("applicationsList");
             listDiv.innerHTML = "";
-            
-            fetchBtn.innerText = "✅ Synced Successfully";
-            setTimeout(() => { fetchBtn.innerText = "🔍 Sync Website Data"; fetchBtn.style.opacity = "1"; }, 2000);
-
-            if (!data) {
-                listDiv.innerHTML = "<div class='app-card' style='text-align:center;'>No Current Applications Found.</div>";
-                return;
-            }
-
-            const keys = Object.keys(data).reverse();
-            keys.forEach(id => {
-                const application = data[id];
-                const card = `
+            if (!data) { listDiv.innerHTML = "<p style='text-align:center;'>No records.</p>"; return; }
+            Object.keys(data).reverse().forEach(id => {
+                const app = data[id];
+                listDiv.innerHTML += `
                     <div class="app-card">
-                        <span class="status-badge">${application.status || 'New'}</span>
-                        <div class="detail"><b>👤 Name:</b> ${application.name}</div>
-                        <div class="detail"><b>📞 Phone:</b> ${application.phone}</div>
-                        <div class="detail"><b>💰 Amount:</b> ₹${application.amount}</div>
-                        <div class="detail"><b>🏠 Address:</b> ${application.address || 'Not Provided'}</div>
-                        <div class="detail"><b>📅 Applied On:</b> ${new Date(application.timestamp).toLocaleString()}</div>
-                    </div>
-                `;
-                listDiv.innerHTML += card;
+                        <span class="status-badge">${app.status || 'New'}</span>
+                        <div class="detail"><b>👤 Name:</b> ${app.name}</div>
+                        <div class="detail"><b>📞 Phone:</b> ${app.phone}</div>
+                        <div class="detail"><b>💰 Amount:</b> ₹${app.amount}</div>
+                    </div>`;
             });
         });
     };
+</script>
 
-    window.logout = () => {
-        localStorage.removeItem("isAdmin");
-        window.location.href = "index.html";
-    };
-
-    // Snowfall Script
+<script>
+    // Snow logic remains same...
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
     resize();
-    window.addEventListener("resize", resize);
     let snowflakes = [];
-    for(let i=0;i<100;i++){ snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*3+1, d: Math.random()*1 }); }
+    for(let i=0;i<80;i++){ snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, d: Math.random()*1 }); }
     function drawSnow(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
         ctx.fillStyle = "white";
         ctx.beginPath();
         for(let f of snowflakes){ ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true); }
         ctx.fill();
-        moveSnow();
-    }
-    function moveSnow(){
-        for(let f of snowflakes){
-            f.y += f.d;
-            if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; }
-        }
+        for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; } }
     }
     setInterval(drawSnow, 30);
 </script>
-
 </body>
 </html>
