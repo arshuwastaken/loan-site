@@ -98,7 +98,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
     import { 
-        getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification 
+        getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
@@ -115,6 +115,13 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
+
+    // [MODIFIED] Auto-Redirect: Agar pehle se login ho toh direct home.html pe jao
+    onAuthStateChanged(auth, (user) => {
+        if (user && user.emailVerified) {
+            window.location.href = "home.html";
+        }
+    });
 
     // Sync Background with Admin Panel
     onValue(ref(db, 'settings/backgroundUrl'), (snapshot) => {
@@ -148,7 +155,8 @@
                 const userCred = await signInWithEmailAndPassword(auth, email, password);
                 if(userCred.user.emailVerified) {
                     showAlert("Success", "Welcome to Star Choice! 🚀", "#22c55e");
-                    setTimeout(() => window.location.href = "index.html", 2000);
+                    // [MODIFIED] Redirecting to home.html instead of index.html
+                    setTimeout(() => window.location.href = "home.html", 2000);
                 } else {
                     showAlert("Verify Gmail", "Bhai pehle apni Gmail check karo aur link verify karo! 📧", "#f1c40f");
                 }
