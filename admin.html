@@ -53,7 +53,9 @@
         .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-weight: 600; transition: 0.3s; }
         .tab-btn.active { color: #22c55e; border-bottom: 2px solid #22c55e; }
         
-        .email-list-item { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 14px; }
+        .email-list-item { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        .dots-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 20px; padding: 0 10px; transition: 0.2s; }
+        .dots-btn:hover { color: white; }
     </style>
 </head>
 <body>
@@ -78,7 +80,6 @@
             <button class="tab-btn" id="tabUser" onclick="switchTab('user')">Users</button>
         </div>
         <div id="emailList" style="min-height: 100px;">
-            <!-- Emails will load here -->
             <p style="color: #94a3b8;">Fetching data...</p>
         </div>
         <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; justify-content: center; background: #ef4444;">Close Panel</button>
@@ -109,7 +110,6 @@
 
         <div style="display: flex; gap: 15px; margin-bottom: 25px;">
             <button class="btn-main" id="fetchBtn" onclick="loadApplications()" style="flex:1; justify-content: center;">🔍 Sync Data</button>
-            <!-- Naya Button Jo Aapne Manga -->
             <button class="btn-main" onclick="openUserManager()" style="flex:1; justify-content: center;">📧 Manage Users</button>
         </div>
 
@@ -119,7 +119,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set, get, update } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
@@ -134,6 +134,9 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    const SUPER_ADMIN = "arshshuklabpl@gmail.com";
+
+    // Access Check
     if (localStorage.getItem("isAdmin") === "true") {
         document.getElementById("adminContent").style.display = "block";
     } else {
@@ -179,10 +182,7 @@
         });
     };
 
-    // --- User Manager Logic ---
-    let cachedAdmins = ["starchoice.admin@gmail.com"]; // Default Example
-    let cachedUsers = [];
-
+    // --- User Manager Logic Integrated ---
     window.openUserManager = async function() {
         document.getElementById('userModal').style.display = 'flex';
         switchTab('admin');
@@ -195,26 +195,55 @@
         
         listDiv.innerHTML = "<p style='color:#94a3b8;'>Loading list...</p>";
 
+        const snapshot = await get(ref(db, 'users'));
+        const users = snapshot.exists() ? snapshot.val() : {};
+
         if(type === 'admin') {
             tabAdmin.classList.add('active');
             tabUser.classList.remove('active');
-            // Fetch Admins from DB (if you store them there)
-            listDiv.innerHTML = `<div class="email-list-item">⭐ starchoice.admin@gmail.com</div>`;
+            
+            // Fix Super Admin at top
+            listDiv.innerHTML = `<div class="email-list-item" style="border-left: 3px solid #f1c40f; background: rgba(241, 196, 15, 0.1);">
+                <span>👑 ${SUPER_ADMIN} (Owner)</span>
+            </div>`;
+            
+            // Add other admins from DB
+            Object.values(users).forEach(u => {
+                if(u.role === 'admin' && u.email !== SUPER_ADMIN) {
+                    listDiv.innerHTML += `<div class="email-list-item"><span>⭐ ${u.email}</span></div>`;
+                }
+            });
         } else {
             tabUser.classList.add('active');
             tabAdmin.classList.remove('active');
+            listDiv.innerHTML = "";
             
-            // Logic to fetch registered users (You'll need a 'users' node in DB)
-            const snapshot = await get(ref(db, 'users'));
-            if(snapshot.exists()) {
-                listDiv.innerHTML = "";
-                const users = snapshot.val();
-                Object.values(users).forEach(u => {
-                    listDiv.innerHTML += `<div class="email-list-item">👤 ${u.email}</div>`;
-                });
-            } else {
-                listDiv.innerHTML = "<p>No users found in database.</p>";
-            }
+            let foundUsers = false;
+            Object.keys(users).forEach(uid => {
+                const u = users[uid];
+                if(u.email !== SUPER_ADMIN && u.role !== 'admin') {
+                    foundUsers = true;
+                    listDiv.innerHTML += `
+                        <div class="email-list-item">
+                            <span>👤 ${u.email}</span>
+                            <button class="dots-btn" onclick="promoteUser('${uid}', '${u.email}')">⋮</button>
+                        </div>`;
+                }
+            });
+
+            if(!foundUsers) listDiv.innerHTML = "<p style='color:#94a3b8;'>No normal users found.</p>";
+        }
+    };
+
+    window.promoteUser = function(uid, email) {
+        const confirmAction = confirm(`Bhai, kya aap ${email} ko Admin banana chahte ho?`);
+        if(confirmAction) {
+            update(ref(db, 'users/' + uid), { role: 'admin' }).then(() => {
+                showAlert("Success", `${email} ab Admin hai!`, "#22c55e");
+                switchTab('user'); 
+            }).catch(() => {
+                showAlert("Error", "Update fail ho gaya!", "#ef4444");
+            });
         }
     };
 
@@ -245,6 +274,7 @@
         for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; } }
     }
     setInterval(drawSnow, 30);
+    window.onresize = resize;
 </script>
 </body>
 </html>
