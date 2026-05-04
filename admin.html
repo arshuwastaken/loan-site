@@ -30,7 +30,7 @@
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
             z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px);
         }
-        #userModal { z-index: 9000; } /* Lower than alerts */
+        #userModal { z-index: 9000; }
 
         .modal-box { 
             background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; 
@@ -48,11 +48,10 @@
 
         .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); position: relative; text-align: left; }
         
-        /* Dropdown Menu Styling */
         .user-item-wrapper { position: relative; }
         .email-list-item { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
         
-        .dropdown { position: absolute; right: 10px; top: 40px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; width: 160px; display: none; z-index: 9500; box-shadow: 0 10px 20px rgba(0,0,0,0.5); overflow: hidden; }
+        .dropdown { position: absolute; right: 10px; top: 40px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; width: 180px; display: none; z-index: 9500; box-shadow: 0 10px 20px rgba(0,0,0,0.5); overflow: hidden; }
         .dropdown button { width: 100%; padding: 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; font-family: 'Poppins'; transition: 0.2s; }
         .dropdown button:hover { background: rgba(255,255,255,0.1); }
         .dropdown .btn-danger:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
@@ -69,7 +68,6 @@
 
 <canvas id="snow"></canvas>
 
-<!-- Custom Popup Alert (Highest Layer) -->
 <div id="customAlert" class="modal-overlay">
     <div class="modal-box">
         <h3 id="alertTitle" style="margin-top:0;">Notification</h3>
@@ -81,7 +79,6 @@
     </div>
 </div>
 
-<!-- Email/User Manager Modal -->
 <div id="userModal" class="modal-overlay">
     <div class="modal-box" style="max-width: 550px;">
         <h3 style="margin-top:0; color: #22c55e;">📧 User Management</h3>
@@ -179,7 +176,6 @@
             Object.keys(data).reverse().forEach(id => {
                 const app = data[id];
                 listDiv.innerHTML += `<div class="app-card">
-                    <span class="status-badge">${app.status || 'New'}</span>
                     <div class="detail"><b>Name:</b> ${app.name}</div>
                     <div class="detail"><b>Phone:</b> ${app.phone}</div>
                     <div class="detail"><b>Amount:</b> ₹${app.amount}</div>
@@ -201,23 +197,30 @@
         listDiv.innerHTML = "";
 
         if(type === 'admin') {
-            listDiv.innerHTML = `<div class="email-list-item" style="background: rgba(241, 196, 15, 0.1);"><span>👑 ${SUPER_ADMIN} (Owner)</span></div>`;
+            listDiv.innerHTML = `<div class="email-list-item" style="background: rgba(241, 196, 15, 0.1); border-radius:8px; margin-bottom:5px;"><span>👑 ${SUPER_ADMIN} (Owner)</span></div>`;
         }
 
         Object.keys(users).forEach(uid => {
             const u = users[uid];
             if(u.email === SUPER_ADMIN) return;
-            if((type === 'admin' && u.role === 'admin') || (type === 'user' && u.role !== 'admin')) {
+
+            const isAdmin = u.role === 'admin';
+            const isBanned = u.role === 'banned';
+
+            if((type === 'admin' && isAdmin) || (type === 'user' && !isAdmin)) {
                 listDiv.innerHTML += `
                     <div class="user-item-wrapper">
                         <div class="email-list-item">
-                            <span>${type === 'admin' ? '⭐' : '👤'} ${u.email}</span>
+                            <span>${isAdmin ? '⭐' : '👤'} ${u.email} ${isBanned ? '<b style="color:#ef4444; font-size:10px;">(BANNED)</b>' : ''}</span>
                             <button class="dots-btn" onclick="toggleDropdown('${uid}')">⋮</button>
                         </div>
                         <div id="drop-${uid}" class="dropdown">
-                            <button onclick="promoteUser('${uid}', '${u.email}')">⬆️ Promote Admin</button>
+                            ${isAdmin 
+                                ? `<button onclick="demoteUser('${uid}', '${u.email}')">⬇️ Demote to User</button>` 
+                                : `<button onclick="promoteUser('${uid}', '${u.email}')">⬆️ Promote Admin</button>`
+                            }
+                            <button class="btn-danger" onclick="banUser('${uid}', '${u.email}', ${isBanned})">${isBanned ? '✅ Unban User' : '🚫 Ban Account'}</button>
                             <button class="btn-danger" onclick="removeUser('${uid}', '${u.email}')">🗑️ Remove User</button>
-                            <button class="btn-danger" onclick="banUser('${uid}', '${u.email}')">🚫 Ban Account</button>
                         </div>
                     </div>`;
             }
@@ -240,20 +243,33 @@
         });
     };
 
-    window.removeUser = (uid, email) => {
-        showAlert("Confirm Removal", `Delete user ${email} from database?`, "#ef4444", true, () => {
-            remove(ref(db, `users/${uid}`)).then(() => {
-                showAlert("Deleted", "User has been removed.", "#ef4444");
-                switchTab(document.getElementById('tabAdmin').classList.contains('active') ? 'admin' : 'user');
+    window.demoteUser = (uid, email) => {
+        showAlert("Confirm Demotion", `Remove admin rights from ${email}?`, "#f1c40f", true, () => {
+            update(ref(db, `users/${uid}`), { role: 'user' }).then(() => {
+                showAlert("Updated", "User is now a normal member.", "#22c55e");
+                switchTab('admin');
             });
         });
     };
 
-    window.banUser = (uid, email) => {
-        showAlert("Confirm Ban", `Ban ${email} from accessing the panel?`, "#ef4444", true, () => {
-            update(ref(db, `users/${uid}`), { role: 'banned' }).then(() => {
-                showAlert("Banned", "User is now blocked.", "#ef4444");
-                switchTab('user');
+    window.removeUser = (uid, email) => {
+        showAlert("Confirm Removal", `Delete user ${email} from database?`, "#ef4444", true, () => {
+            remove(ref(db, `users/${uid}`)).then(() => {
+                showAlert("Deleted", "User has been removed.", "#ef4444");
+                const currentTab = document.getElementById('tabAdmin').classList.contains('active') ? 'admin' : 'user';
+                switchTab(currentTab);
+            });
+        });
+    };
+
+    window.banUser = (uid, email, isBanned) => {
+        const action = isBanned ? "Unban" : "Ban";
+        const newRole = isBanned ? "user" : "banned";
+        showAlert(`Confirm ${action}`, `${action} ${email}?`, "#ef4444", true, () => {
+            update(ref(db, `users/${uid}`), { role: newRole }).then(() => {
+                showAlert("Success", `User has been ${action}ned.`, "#22c55e");
+                const currentTab = document.getElementById('tabAdmin').classList.contains('active') ? 'admin' : 'user';
+                switchTab(currentTab);
             });
         });
     };
@@ -270,7 +286,6 @@
     window.closeAlert = () => { document.getElementById("customAlert").style.display = "none"; };
     window.logout = () => { localStorage.removeItem("isAdmin"); window.location.href = "index.html"; };
     
-    // Close dropdowns on click outside
     document.addEventListener('click', (e) => {
         if (!e.target.matches('.dots-btn')) {
             document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
