@@ -111,6 +111,7 @@
 <div id="adminModal">
     <div class="modal-content">
         <h3 style="margin:0;">🚀 Admin Access</h3>
+        <p style="font-size: 12px; color: #94a3b8;">Enter code if not auto-promoted</p>
         <input type="password" id="adminInput" placeholder="Security Code">
         <div style="display: flex; justify-content: center; gap: 10px;">
             <button class="modal-btn" id="submitAdminBtn" style="background:#22c55e;">Verify 🚀</button>
@@ -127,11 +128,13 @@
     <a href="#">🕒 History</a>
     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 20px;">
     
+    <!-- Dynamic Admin Section -->
     <a href="#" id="grantBtn" onclick="document.getElementById('adminModal').style.display='flex'">🔑 Grant Admin</a>
     <div id="adminMenu" style="display:none;">
         <a href="admin.html" style="color: #22c55e !important;">🚀 Admin Panel</a>
         <a href="#" onclick="signOutAdmin()" style="color: #ff4757 !important;">🚪 Exit Admin Mode</a>
     </div>
+
     <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 20px;">
     <a href="#" id="logoutUser" style="color: #ef4444 !important;">👋 Log Out Account</a>
 </div>
@@ -164,18 +167,42 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // [SECURITY] Check if user is logged in
+    // [SECURITY & ROLE CHECK]
     onAuthStateChanged(auth, (user) => {
         if (!user) {
-            // Agar login nahi hai toh index.html (Login page) par fenk do
             window.location.href = "index.html";
-        } else if (!user.emailVerified) {
-            // Agar email verify nahi ki toh bhi login par wapas
-            window.location.href = "index.html";
+        } else {
+            // Check real-time if user is admin in Database
+            const userRoleRef = ref(db, 'users/' + user.uid + '/role');
+            onValue(userRoleRef, (snapshot) => {
+                if (snapshot.exists() && snapshot.val() === 'admin') {
+                    localStorage.setItem("isAdmin", "true");
+                    showAdminFeatures();
+                } else {
+                    // If not admin in DB, check if they have manual override
+                    if (localStorage.getItem("isAdmin") !== "true") {
+                        hideAdminFeatures();
+                    }
+                }
+            });
         }
     });
 
-    // Handle User Logout
+    // Manual Admin Access (Backup)
+    window.checkAdmin = async function() {
+        const inputCode = document.getElementById("adminInput").value.trim();
+        const snapshot = await get(ref(db, 'admin/code'));
+        if (snapshot.exists() && String(snapshot.val()) === inputCode) {
+            localStorage.setItem("isAdmin", "true");
+            showAdminFeatures();
+            showMsg("Admin Access Granted!", "#22c55e");
+            document.getElementById("adminModal").style.display = "none";
+        } else {
+            showMsg("Wrong Code!", "#ef4444");
+        }
+    };
+
+    // Logout
     document.getElementById('logoutUser').onclick = () => {
         signOut(auth).then(() => {
             localStorage.removeItem("isAdmin");
@@ -190,25 +217,9 @@
         if(url) document.body.style.backgroundImage = `url('${url}')`;
     });
 
-    // Admin Logic
-    window.checkAdmin = async function() {
-        const inputCode = document.getElementById("adminInput").value.trim();
-        const snapshot = await get(ref(db, 'admin/code'));
-        if (snapshot.exists() && String(snapshot.val()) === inputCode) {
-            localStorage.setItem("isAdmin", "true");
-            showAdminFeatures();
-            showMsg("Admin Access Granted!", "#22c55e");
-            document.getElementById("adminModal").style.display = "none";
-        } else {
-            showMsg("Wrong Code!", "#ef4444");
-        }
-    };
     document.getElementById('submitAdminBtn').onclick = checkAdmin;
-
     document.getElementById('goApply').onclick = () => window.location.href = "apply.html";
     document.getElementById('goContact').onclick = () => window.location.href = "contact.html";
-
-    if (localStorage.getItem("isAdmin") === "true") showAdminFeatures();
 </script>
 
 <script>
@@ -228,10 +239,14 @@
         document.getElementById("grantBtn").style.display = "none";
     }
 
-    window.signOutAdmin = function() {
-        localStorage.removeItem("isAdmin");
+    function hideAdminFeatures() {
         document.getElementById("adminMenu").style.display = "none";
         document.getElementById("grantBtn").style.display = "block";
+    }
+
+    window.signOutAdmin = function() {
+        localStorage.removeItem("isAdmin");
+        hideAdminFeatures();
         showMsg("Admin Mode Off", "#ff4757");
     }
 
