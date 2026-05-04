@@ -37,7 +37,6 @@
         }
         input:focus { border-color: #22c55e; background: #1e293b; }
 
-        /* Rocket Greenish Button */
         .btn {
             width: 100%; padding: 15px; border-radius: 12px; border: none;
             background: linear-gradient(135deg, rgba(34, 197, 94, 0.7), rgba(20, 83, 45, 0.9));
@@ -50,7 +49,6 @@
         .toggle-text { margin-top: 25px; font-size: 14px; color: #cbd5e1; }
         .toggle-text span { color: #22c55e; cursor: pointer; font-weight: 600; text-decoration: underline; }
 
-        /* Professional Alert Popup */
         #customAlert { 
             display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); 
             z-index: 9999; justify-content: center; align-items: center; 
@@ -66,7 +64,6 @@
 
 <canvas id="snow"></canvas>
 
-<!-- Custom Popup Alert -->
 <div id="customAlert">
     <div class="alert-box">
         <h3 id="alertTitle" style="margin-top:0;">Notification</h3>
@@ -100,7 +97,7 @@
     import { 
         getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
@@ -116,14 +113,12 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // [MODIFIED] Auto-Redirect: Agar pehle se login ho toh direct home.html pe jao
     onAuthStateChanged(auth, (user) => {
         if (user && user.emailVerified) {
             window.location.href = "home.html";
         }
     });
 
-    // Sync Background with Admin Panel
     onValue(ref(db, 'settings/backgroundUrl'), (snapshot) => {
         const url = snapshot.val();
         if(url) document.body.style.backgroundImage = `url('${url}')`;
@@ -155,15 +150,23 @@
                 const userCred = await signInWithEmailAndPassword(auth, email, password);
                 if(userCred.user.emailVerified) {
                     showAlert("Success", "Welcome to Star Choice! 🚀", "#22c55e");
-                    // [MODIFIED] Redirecting to home.html instead of index.html
                     setTimeout(() => window.location.href = "home.html", 2000);
                 } else {
                     showAlert("Verify Gmail", "Bhai pehle apni Gmail check karo aur link verify karo! 📧", "#f1c40f");
                 }
             } else {
-                // SIGNUP
+                // SIGNUP (Database Save Logic Added Here)
                 const userCred = await createUserWithEmailAndPassword(auth, email, password);
-                await sendEmailVerification(userCred.user);
+                const user = userCred.user;
+
+                // [NEW] Save user email to Realtime Database
+                await set(ref(db, 'users/' + user.uid), {
+                    email: email,
+                    uid: user.uid,
+                    registeredAt: new Date().toISOString()
+                });
+
+                await sendEmailVerification(user);
                 showAlert("Check Gmail", "Registration done! Apni Gmail pe jaake link click karo verification ke liye. 📧", "#22c55e");
                 toggleForm();
             }
@@ -182,7 +185,6 @@
 </script>
 
 <script>
-    // Professional Snow Effect
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
