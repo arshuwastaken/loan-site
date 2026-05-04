@@ -10,15 +10,10 @@
 
         body { margin: 0; font-family: 'Poppins', sans-serif; background: #0f172a; color: white; min-height: 100vh; overflow-x: hidden; }
         
-        /* Fixed Background logic */
         body::before { 
-            content: ""; 
-            position: fixed; 
-            inset: 0; 
+            content: ""; position: fixed; inset: 0; 
             background: url('bg.png') center/cover no-repeat; 
-            z-index: -2; 
-            opacity: 0.4; 
-            transition: background 0.5s ease-in-out; 
+            z-index: -2; opacity: 0.4; transition: background 0.5s ease-in-out; 
         }
         
         canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
@@ -30,22 +25,14 @@
         .input-group { display: flex; gap: 10px; margin-top: 15px; }
         input[type="text"] { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; font-family: 'Poppins'; }
 
-        #customAlert { 
-            display: none; 
-            position: fixed; 
-            inset: 0; 
-            background: rgba(0,0,0,0.8); 
-            z-index: 9999; 
-            justify-content: center; 
-            align-items: center; 
+        /* General Alert/Modal Styling */
+        .modal-overlay { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
+            z-index: 9999; justify-content: center; align-items: center; backdrop-filter: blur(5px);
         }
-        .alert-box { 
-            background: #1e293b; 
-            padding: 30px; 
-            border-radius: 15px; 
-            text-align: center; 
-            border: 1px solid #22c55e; 
-            width: 320px; 
+        .modal-box { 
+            background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; 
+            border: 1px solid #22c55e; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;
             animation: popUp 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
         @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
@@ -53,37 +40,59 @@
         .btn-main { 
             background: #22c55e; color: white; border: none; padding: 12px 20px; border-radius: 10px; 
             cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px;
+            font-family: 'Poppins';
         }
         .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
 
-        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); position: relative; }
+        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); position: relative; text-align: left; }
         .status-badge { position: absolute; top: 20px; right: 20px; padding: 6px 14px; border-radius: 50px; font-size: 12px; font-weight: 600; background: #f1c40f; color: #000; }
         .detail { margin: 8px 0; font-size: 14px; color: #cbd5e1; }
 
-        #accessDenied { display: none; text-align: center; padding-top: 150px; }
-        #adminContent { display: none; }
+        /* Tabs inside User Modal */
+        .tab-btn-box { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .tab-btn.active { color: #22c55e; border-bottom: 2px solid #22c55e; }
+        
+        .email-list-item { padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 14px; }
     </style>
 </head>
 <body>
 
 <canvas id="snow"></canvas>
 
-<div id="customAlert">
-    <div class="alert-box">
+<!-- Custom Popup Alert -->
+<div id="customAlert" class="modal-overlay">
+    <div class="modal-box">
         <h3 id="alertTitle" style="margin-top:0;">Notification</h3>
         <p id="alertMsg"></p>
         <button class="btn-main" onclick="closeAlert()" style="margin-top: 10px; width: 100%; justify-content: center;">Close</button>
     </div>
 </div>
 
+<!-- Email/User Manager Modal -->
+<div id="userModal" class="modal-overlay">
+    <div class="modal-box">
+        <h3 style="margin-top:0; color: #22c55e;">📧 Email Manager</h3>
+        <div class="tab-btn-box">
+            <button class="tab-btn active" id="tabAdmin" onclick="switchTab('admin')">Admins</button>
+            <button class="tab-btn" id="tabUser" onclick="switchTab('user')">Users</button>
+        </div>
+        <div id="emailList" style="min-height: 100px;">
+            <!-- Emails will load here -->
+            <p style="color: #94a3b8;">Fetching data...</p>
+        </div>
+        <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; justify-content: center; background: #ef4444;">Close Panel</button>
+    </div>
+</div>
+
 <div class="container">
-    <div id="accessDenied">
+    <div id="accessDenied" style="display: none; text-align: center; padding-top: 150px;">
         <h1 style="font-size: 60px;">🚫</h1>
         <h2>Access Denied</h2>
         <button class="btn-main" onclick="window.location.href='index.html'">Return Home</button>
     </div>
 
-    <div id="adminContent">
+    <div id="adminContent" style="display: none;">
         <div class="header">
             <h2 style="margin:0;">Admin Panel 🔐</h2>
             <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600;">Sign Out</button>
@@ -93,13 +102,15 @@
             <h3 style="margin:0;">Website Appearance 🖼️</h3>
             <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Update background for all pages via URL:</p>
             <div class="input-group">
-                <input type="text" id="bgUrlInput" placeholder="Paste image direct URL (e.g., https://site.com/image.png)">
+                <input type="text" id="bgUrlInput" placeholder="Paste image direct URL">
                 <button class="btn-main" id="uploadBtn" onclick="updateBackground()">Update BG</button>
             </div>
         </div>
 
         <div style="display: flex; gap: 15px; margin-bottom: 25px;">
             <button class="btn-main" id="fetchBtn" onclick="loadApplications()" style="flex:1; justify-content: center;">🔍 Sync Data</button>
+            <!-- Naya Button Jo Aapne Manga -->
+            <button class="btn-main" onclick="openUserManager()" style="flex:1; justify-content: center;">📧 Manage Users</button>
         </div>
 
         <div id="applicationsList"></div>
@@ -108,7 +119,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
@@ -129,50 +140,33 @@
         document.getElementById("accessDenied").style.display = "block";
     }
 
-    // --- FIX: Real-time Background Update ---
-    const bgRef = ref(db, 'settings/backgroundUrl');
-    onValue(bgRef, (snapshot) => {
+    // Sync Background
+    onValue(ref(db, 'settings/backgroundUrl'), (snapshot) => {
         const url = snapshot.val();
         if (url) {
-            // Updating the CSS variable or direct style
-            document.body.style.setProperty('--bg-url', `url('${url}')`);
-            // Adding a dynamic style tag to override the ::before pseudo-element
-            let styleTag = document.getElementById('dynamic-bg');
-            if (!styleTag) {
-                styleTag = document.createElement('style');
-                styleTag.id = 'dynamic-bg';
-                document.head.appendChild(styleTag);
-            }
+            let styleTag = document.getElementById('dynamic-bg') || document.createElement('style');
+            styleTag.id = 'dynamic-bg';
             styleTag.innerHTML = `body::before { background-image: url('${url}') !important; }`;
+            document.head.appendChild(styleTag);
         }
     });
 
     window.updateBackground = function() {
         const url = document.getElementById("bgUrlInput").value.trim();
-        if(!url) { 
-            showAlert("Error", "Please enter a URL.", "#f1c40f"); 
-            return; 
-        }
-        
-        const btn = document.getElementById("uploadBtn");
-        btn.innerText = "Updating...";
-        
+        if(!url) { showAlert("Error", "URL dalo bhai!", "#f1c40f"); return; }
         set(ref(db, 'settings/backgroundUrl'), url).then(() => {
-            showAlert("Success", "Background updated successfully!", "#22c55e");
+            showAlert("Success", "Background Update Ho Gaya!", "#22c55e");
             document.getElementById("bgUrlInput").value = "";
-            btn.innerText = "Update BG";
-        }).catch(err => {
-            showAlert("Error", err.message, "#ef4444");
-            btn.innerText = "Update BG";
         });
     };
 
+    // Load Applications
     window.loadApplications = function() {
         onValue(ref(db, 'applications'), (snapshot) => {
             const data = snapshot.val();
             const listDiv = document.getElementById("applicationsList");
             listDiv.innerHTML = "";
-            if (!data) return;
+            if (!data) { listDiv.innerHTML = "<p>No applications found.</p>"; return; }
             Object.keys(data).reverse().forEach(id => {
                 const app = data[id];
                 listDiv.innerHTML += `<div class="app-card">
@@ -183,6 +177,45 @@
                 </div>`;
             });
         });
+    };
+
+    // --- User Manager Logic ---
+    let cachedAdmins = ["starchoice.admin@gmail.com"]; // Default Example
+    let cachedUsers = [];
+
+    window.openUserManager = async function() {
+        document.getElementById('userModal').style.display = 'flex';
+        switchTab('admin');
+    };
+
+    window.switchTab = async function(type) {
+        const listDiv = document.getElementById('emailList');
+        const tabAdmin = document.getElementById('tabAdmin');
+        const tabUser = document.getElementById('tabUser');
+        
+        listDiv.innerHTML = "<p style='color:#94a3b8;'>Loading list...</p>";
+
+        if(type === 'admin') {
+            tabAdmin.classList.add('active');
+            tabUser.classList.remove('active');
+            // Fetch Admins from DB (if you store them there)
+            listDiv.innerHTML = `<div class="email-list-item">⭐ starchoice.admin@gmail.com</div>`;
+        } else {
+            tabUser.classList.add('active');
+            tabAdmin.classList.remove('active');
+            
+            // Logic to fetch registered users (You'll need a 'users' node in DB)
+            const snapshot = await get(ref(db, 'users'));
+            if(snapshot.exists()) {
+                listDiv.innerHTML = "";
+                const users = snapshot.val();
+                Object.values(users).forEach(u => {
+                    listDiv.innerHTML += `<div class="email-list-item">👤 ${u.email}</div>`;
+                });
+            } else {
+                listDiv.innerHTML = "<p>No users found in database.</p>";
+            }
+        }
     };
 
     window.showAlert = (title, msg, color) => {
@@ -196,6 +229,7 @@
 </script>
 
 <script>
+    // Snow Effect
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
