@@ -115,9 +115,16 @@
             </div>
         </div>
 
-        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+        <!-- Row 1: Core Actions -->
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
             <button class="btn-main" id="fetchBtn" onclick="loadApplications()" style="flex:1; justify-content: center;">🔍 Sync Records</button>
             <button class="btn-main" onclick="openUserManager()" style="flex:1; justify-content: center;">📧 Manage Users</button>
+        </div>
+
+        <!-- Row 2: Export & Tools -->
+        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+            <button class="btn-main" onclick="exportData()" style="flex:1; justify-content: center; background: #3b82f6;">📊 Export to Excel (JSON)</button>
+            <button class="btn-main" style="flex:1; justify-content: center; background: #8b5cf6; opacity: 0.6; cursor: not-allowed;">⚙️ System Tools</button>
         </div>
 
         <div id="applicationsList"></div>
@@ -182,6 +189,37 @@
                 </div>`;
             });
         });
+    };
+
+    // Export Functionality
+    window.exportData = async () => {
+        try {
+            showAlert("Processing", "Generating backup file...", "#3b82f6");
+            const snapshot = await get(ref(db, 'applications'));
+            
+            if (!snapshot.exists()) {
+                showAlert("Error", "No application data found to export.", "#ef4444");
+                return;
+            }
+
+            const data = snapshot.val();
+            const fileName = "Star_Choice_Backup_" + new Date().toISOString().split('T')[0] + ".json";
+            
+            // Create JSON blob
+            const blob = new Blob([JSON.stringify(data, null, 4)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = fileName;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            showAlert("Export Complete", "Records saved as " + fileName, "#22c55e");
+        } catch (e) {
+            showAlert("Error", "Export failed: " + e.message, "#ef4444");
+        }
     };
 
     window.openUserManager = () => { document.getElementById('userModal').style.display = 'flex'; switchTab('admin'); };
