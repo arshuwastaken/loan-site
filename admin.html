@@ -67,14 +67,17 @@
     <div class="modal-box">
         <h3 id="alertTitle" style="margin-top:0;">Notification</h3>
         <p id="alertMsg"></p>
-        <button class="btn-main" onclick="closeAlert()" style="margin-top: 10px; width: 100%; justify-content: center;">Close</button>
+        <div id="alertButtons" style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="btn-main" id="confirmBtn" style="flex: 1; justify-content: center;">OK</button>
+            <button class="btn-main" id="cancelBtn" onclick="closeAlert()" style="flex: 1; justify-content: center; background: #64748b;">Cancel</button>
+        </div>
     </div>
 </div>
 
 <!-- Email/User Manager Modal -->
 <div id="userModal" class="modal-overlay">
     <div class="modal-box">
-        <h3 style="margin-top:0; color: #22c55e;">📧 Email Manager</h3>
+        <h3 style="margin-top:0; color: #22c55e;">📧 User Management</h3>
         <div class="tab-btn-box">
             <button class="tab-btn active" id="tabAdmin" onclick="switchTab('admin')">Admins</button>
             <button class="tab-btn" id="tabUser" onclick="switchTab('user')">Users</button>
@@ -82,7 +85,7 @@
         <div id="emailList" style="min-height: 100px;">
             <p style="color: #94a3b8;">Fetching data...</p>
         </div>
-        <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; justify-content: center; background: #ef4444;">Close Panel</button>
+        <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; justify-content: center; background: #ef4444;">Close Management</button>
     </div>
 </div>
 
@@ -95,21 +98,21 @@
 
     <div id="adminContent" style="display: none;">
         <div class="header">
-            <h2 style="margin:0;">Admin Panel 🔐</h2>
+            <h2 style="margin:0;">Admin Control Center 🔐</h2>
             <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600;">Sign Out</button>
         </div>
 
         <div class="settings-card">
             <h3 style="margin:0;">Website Appearance 🖼️</h3>
-            <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Update background for all pages via URL:</p>
+            <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Update background image for all pages via direct URL:</p>
             <div class="input-group">
-                <input type="text" id="bgUrlInput" placeholder="Paste image direct URL">
-                <button class="btn-main" id="uploadBtn" onclick="updateBackground()">Update BG</button>
+                <input type="text" id="bgUrlInput" placeholder="Enter image direct URL">
+                <button class="btn-main" id="uploadBtn" onclick="updateBackground()">Update Theme</button>
             </div>
         </div>
 
         <div style="display: flex; gap: 15px; margin-bottom: 25px;">
-            <button class="btn-main" id="fetchBtn" onclick="loadApplications()" style="flex:1; justify-content: center;">🔍 Sync Data</button>
+            <button class="btn-main" id="fetchBtn" onclick="loadApplications()" style="flex:1; justify-content: center;">🔍 Sync Records</button>
             <button class="btn-main" onclick="openUserManager()" style="flex:1; justify-content: center;">📧 Manage Users</button>
         </div>
 
@@ -156,9 +159,9 @@
 
     window.updateBackground = function() {
         const url = document.getElementById("bgUrlInput").value.trim();
-        if(!url) { showAlert("Error", "URL dalo bhai!", "#f1c40f"); return; }
+        if(!url) { showAlert("Action Required", "Please provide a valid image URL.", "#f1c40f"); return; }
         set(ref(db, 'settings/backgroundUrl'), url).then(() => {
-            showAlert("Success", "Background Update Ho Gaya!", "#22c55e");
+            showAlert("Theme Updated", "The background has been successfully changed.", "#22c55e");
             document.getElementById("bgUrlInput").value = "";
         });
     };
@@ -169,20 +172,19 @@
             const data = snapshot.val();
             const listDiv = document.getElementById("applicationsList");
             listDiv.innerHTML = "";
-            if (!data) { listDiv.innerHTML = "<p>No applications found.</p>"; return; }
+            if (!data) { listDiv.innerHTML = "<p>No application records found.</p>"; return; }
             Object.keys(data).reverse().forEach(id => {
                 const app = data[id];
                 listDiv.innerHTML += `<div class="app-card">
                     <span class="status-badge">${app.status || 'New'}</span>
-                    <div class="detail"><b>Name:</b> ${app.name}</div>
-                    <div class="detail"><b>Phone:</b> ${app.phone}</div>
-                    <div class="detail"><b>Amount:</b> ₹${app.amount}</div>
+                    <div class="detail"><b>Full Name:</b> ${app.name}</div>
+                    <div class="detail"><b>Phone Number:</b> ${app.phone}</div>
+                    <div class="detail"><b>Loan Amount:</b> ₹${app.amount}</div>
                 </div>`;
             });
         });
     };
 
-    // --- User Manager Logic Integrated ---
     window.openUserManager = async function() {
         document.getElementById('userModal').style.display = 'flex';
         switchTab('admin');
@@ -193,7 +195,7 @@
         const tabAdmin = document.getElementById('tabAdmin');
         const tabUser = document.getElementById('tabUser');
         
-        listDiv.innerHTML = "<p style='color:#94a3b8;'>Loading list...</p>";
+        listDiv.innerHTML = "<p style='color:#94a3b8;'>Loading User List...</p>";
 
         const snapshot = await get(ref(db, 'users'));
         const users = snapshot.exists() ? snapshot.val() : {};
@@ -202,12 +204,10 @@
             tabAdmin.classList.add('active');
             tabUser.classList.remove('active');
             
-            // Fix Super Admin at top
             listDiv.innerHTML = `<div class="email-list-item" style="border-left: 3px solid #f1c40f; background: rgba(241, 196, 15, 0.1);">
                 <span>👑 ${SUPER_ADMIN} (Owner)</span>
             </div>`;
             
-            // Add other admins from DB
             Object.values(users).forEach(u => {
                 if(u.role === 'admin' && u.email !== SUPER_ADMIN) {
                     listDiv.innerHTML += `<div class="email-list-item"><span>⭐ ${u.email}</span></div>`;
@@ -231,34 +231,44 @@
                 }
             });
 
-            if(!foundUsers) listDiv.innerHTML = "<p style='color:#94a3b8;'>No normal users found.</p>";
+            if(!foundUsers) listDiv.innerHTML = "<p style='color:#94a3b8;'>No registered users found.</p>";
         }
     };
 
     window.promoteUser = function(uid, email) {
-        const confirmAction = confirm(`Bhai, kya aap ${email} ko Admin banana chahte ho?`);
-        if(confirmAction) {
+        showAlert("Confirm Promotion", `Are you sure you want to grant Admin privileges to ${email}?`, "#22c55e", true, () => {
             update(ref(db, 'users/' + uid), { role: 'admin' }).then(() => {
-                showAlert("Success", `${email} ab Admin hai!`, "#22c55e");
+                showAlert("Success", `${email} is now an Admin!`, "#22c55e");
                 switchTab('user'); 
             }).catch(() => {
-                showAlert("Error", "Update fail ho gaya!", "#ef4444");
+                showAlert("System Error", "Failed to update user role. Please try again.", "#ef4444");
             });
-        }
+        });
     };
 
-    window.showAlert = (title, msg, color) => {
+    window.showAlert = (title, msg, color, isConfirm = false, onConfirm = null) => {
         document.getElementById("alertTitle").innerText = title;
         document.getElementById("alertTitle").style.color = color;
         document.getElementById("alertMsg").innerText = msg;
+        
+        const confirmBtn = document.getElementById("confirmBtn");
+        const cancelBtn = document.getElementById("cancelBtn");
+        
+        cancelBtn.style.display = isConfirm ? "block" : "none";
+        
+        confirmBtn.onclick = () => {
+            closeAlert();
+            if(onConfirm) onConfirm();
+        };
+
         document.getElementById("customAlert").style.display = "flex";
     };
+
     window.closeAlert = () => { document.getElementById("customAlert").style.display = "none"; };
     window.logout = () => { localStorage.removeItem("isAdmin"); window.location.href = "index.html"; };
 </script>
 
 <script>
-    // Snow Effect
     const canvas = document.getElementById("snow");
     const ctx = canvas.getContext("2d");
     function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
