@@ -21,7 +21,6 @@
         
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         
-        /* Stats Row Styling */
         .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
         .stat-box { background: rgba(30, 41, 59, 0.8); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); text-align: center; backdrop-filter: blur(5px); }
         .stat-box h4 { margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
@@ -45,67 +44,50 @@
         .modal-box { 
             background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; 
             border: 1px solid #22c55e; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;
-            animation: popUp 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
 
         .btn-main { 
             background: #22c55e; color: white; border: none; padding: 12px 20px; border-radius: 10px; 
             cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px;
-            font-family: 'Poppins';
+            font-family: 'Poppins'; justify-content: center;
         }
         .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
 
         .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); text-align: left; }
         
         .email-list-item { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
-        
-        .dropdown { position: absolute; right: 10px; top: 40px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; width: 180px; display: none; z-index: 9500; box-shadow: 0 10px 20px rgba(0,0,0,0.5); overflow: hidden; }
-        .dropdown button { width: 100%; padding: 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; font-family: 'Poppins'; transition: 0.2s; }
-        .dropdown button:hover { background: rgba(255,255,255,0.1); }
-
-        .dots-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 20px; padding: 5px 10px; }
-        .tab-btn-box { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-weight: 600; }
-        .tab-btn.active { color: #22c55e; border-bottom: 2px solid #22c55e; }
     </style>
 </head>
 <body>
 
 <canvas id="snow"></canvas>
 
-<!-- Verification Lock -->
+<!-- Login Lock -->
 <div id="authLockOverlay">
     <div class="modal-box" style="width: 350px;">
-        <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
-        <h2 style="margin:0;">Admin Access</h2>
-        <p style="color:#94a3b8; font-size:13px; margin-bottom:20px;">Verify identity to manage Star Choice.</p>
+        <h2>Admin Access</h2>
         <input type="email" id="loginEmail" placeholder="Admin Gmail" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
         <input type="password" id="loginPass" placeholder="Password" style="width:100%; margin-bottom:20px; box-sizing:border-box;">
-        <button id="loginSubmitBtn" class="btn-main" style="width:100%; justify-content:center;">Verify & Unlock</button>
+        <button id="loginSubmitBtn" class="btn-main" style="width:100%;">Verify & Unlock</button>
         <p id="loginError" style="color:#ef4444; font-size:12px; margin-top:10px;"></p>
     </div>
 </div>
 
+<!-- Alert Modal -->
 <div id="customAlert" class="modal-overlay">
     <div class="modal-box">
-        <h3 id="alertTitle" style="margin-top:0;">Notification</h3>
+        <h3 id="alertTitle">Notification</h3>
         <p id="alertMsg"></p>
-        <div id="alertButtons" style="margin-top: 20px; display: flex; gap: 10px;">
-            <button class="btn-main" id="confirmBtn" style="flex: 1; justify-content: center;">OK</button>
-            <button class="btn-main" id="cancelBtn" onclick="closeAlert()" style="flex: 1; justify-content: center; background: #64748b;">Cancel</button>
-        </div>
+        <button class="btn-main" onclick="closeAlert()" style="width: 100%;">OK</button>
     </div>
 </div>
 
+<!-- User Management Modal -->
 <div id="userModal" class="modal-overlay">
     <div class="modal-box" style="max-width: 550px;">
-        <h3 style="margin-top:0; color: #22c55e;">📧 User Management</h3>
-        <div class="tab-btn-box">
-            <button class="tab-btn active" id="tabAdmin" onclick="switchTab('admin')">Admins</button>
-            <button class="tab-btn" id="tabUser" onclick="switchTab('user')">Users</button>
-        </div>
-        <div id="emailList" style="min-height: 200px;"></div>
-        <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; justify-content: center; background: #ef4444;">Close</button>
+        <h3>📧 User Management</h3>
+        <div id="emailList" style="min-height: 200px; text-align: left;"></div>
+        <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; background: #ef4444;">Close</button>
     </div>
 </div>
 
@@ -113,10 +95,9 @@
     <div id="adminContent" style="display: none;">
         <div class="header">
             <h2 style="margin:0;">Admin Control Center 🔐</h2>
-            <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600;">Sign Out</button>
+            <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">Sign Out</button>
         </div>
 
-        <!-- 3 Stats Boxes -->
         <div class="stats-row">
             <div class="stat-box">
                 <h4>Applications</h4>
@@ -124,7 +105,7 @@
             </div>
             <div class="stat-box">
                 <h4>System Status</h4>
-                <p id="statMaintenance" style="color: #22c55e;">Live</p>
+                <p id="statMaintenance">Live</p>
             </div>
             <div class="stat-box">
                 <h4>Total Users</h4>
@@ -133,7 +114,7 @@
         </div>
 
         <div class="settings-card">
-            <h3 style="margin:0;">Website Appearance 🖼️</h3>
+            <h3>Website Appearance 🖼️</h3>
             <div class="input-group">
                 <input type="text" id="bgUrlInput" placeholder="Paste image link here">
                 <button class="btn-main" onclick="updateBackground()">Update Theme</button>
@@ -141,13 +122,13 @@
         </div>
 
         <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-            <button class="btn-main" onclick="loadApplications()" style="flex:1; justify-content: center;">🔍 Sync Records</button>
-            <button class="btn-main" onclick="openUserManager()" style="flex:1; justify-content: center;">📧 Manage Users</button>
+            <button class="btn-main" style="flex:1;" onclick="loadApplications()">🔍 Sync Records</button>
+            <button class="btn-main" style="flex:1;" onclick="openUserManager()">📧 Manage Users</button>
         </div>
 
         <div style="display: flex; gap: 15px; margin-bottom: 25px;">
-            <button class="btn-main" onclick="exportData()" style="flex:1; justify-content: center; background: #3b82f6;">📊 Export JSON</button>
-            <button class="btn-main" id="maintToggleBtn" onclick="toggleMaintenance()" style="flex:1; justify-content: center; background: #8b5cf6;">⚙️ Enable Maintenance</button>
+            <button class="btn-main" style="flex:1; background: #3b82f6;" onclick="exportData()">📊 Export JSON</button>
+            <button class="btn-main" id="maintToggleBtn" style="flex:1; background: #8b5cf6;" onclick="toggleMaintenance()">⚙️ Enable Maintenance</button>
         </div>
 
         <div id="applicationsList"></div>
@@ -156,8 +137,8 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, get, update, remove } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
@@ -174,70 +155,19 @@
     const auth = getAuth(app);
     const SUPER_ADMIN = "arshshuklabpl@gmail.com";
 
-    // Auth Logic
-    window.verifyAdmin = async () => {
-        const email = document.getElementById("loginEmail").value.trim();
-        const pass = document.getElementById("loginPass").value;
-        const errorEl = document.getElementById("loginError");
-        if(!email || !pass) return;
-
-        try {
-            const userCred = await signInWithEmailAndPassword(auth, email, pass);
-            const user = userCred.user;
-            const snapshot = await get(ref(db, `users/${user.uid}`));
-            const userData = snapshot.val();
-
-            if (email === SUPER_ADMIN || (userData && userData.role === 'admin')) {
-                localStorage.setItem("isAdmin", "true");
-                location.reload();
-            } else {
-                errorEl.innerText = "Access Denied.";
-                await auth.signOut();
-            }
-        } catch (err) { errorEl.innerText = "Invalid Credentials!"; }
-    };
-
-    document.getElementById("loginSubmitBtn").onclick = window.verifyAdmin;
-
-    if (localStorage.getItem("isAdmin") === "true") {
-        document.getElementById("authLockOverlay").style.display = "none";
-        document.getElementById("adminContent").style.display = "block";
-        syncStats();
-        loadApplications();
-    }
-
-    // Stats Syncing
-    function syncStats() {
-        // Apps Count
-        onValue(ref(db, 'applications'), (snap) => {
-            document.getElementById("statApps").innerText = snap.exists() ? Object.keys(snap.val()).length : 0;
-        });
-        // Users Count
-        onValue(ref(db, 'users'), (snap) => {
-            document.getElementById("statUsers").innerText = snap.exists() ? Object.keys(snap.val()).length : 0;
-        });
-        // Maintenance Status
-        onValue(ref(db, 'settings/maintenance'), (snap) => {
-            const isMaint = snap.val() === true;
-            const statusEl = document.getElementById("statMaintenance");
-            const btnEl = document.getElementById("maintToggleBtn");
-            
-            statusEl.innerText = isMaint ? "Maintenance" : "Live";
-            statusEl.style.color = isMaint ? "#ef4444" : "#22c55e";
-            btnEl.innerText = isMaint ? "⚙️ Disable Maintenance" : "⚙️ Enable Maintenance";
-            btnEl.style.background = isMaint ? "#22c55e" : "#8b5cf6";
-        });
-    }
-
+    // Attach to window for HTML access
+    window.logout = () => { localStorage.removeItem("isAdmin"); signOut(auth); window.location.href = "index.html"; };
+    window.closeAlert = () => { document.getElementById("customAlert").style.display = "none"; };
+    
     window.toggleMaintenance = async () => {
         const snap = await get(ref(db, 'settings/maintenance'));
         const currentState = snap.val() || false;
-        set(ref(db, 'settings/maintenance'), !currentState);
+        await set(ref(db, 'settings/maintenance'), !currentState);
     };
 
     window.updateBackground = () => {
         const url = document.getElementById("bgUrlInput").value.trim();
-        if(url) set(ref(db, 'settings/backgroundUrl'), url).then(() => showAlert("Done", "Theme Updated", "#22c55e"));
+        if(url) set(ref(db, 'settings/backgroundUrl'), url).then(() => showAlert("Success", "Background Updated", "#22c55e"));
     };
 
     window.loadApplications = () => {
@@ -248,12 +178,19 @@
             if (!data) return;
             Object.keys(data).reverse().forEach(id => {
                 const app = data[id];
-                listDiv.innerHTML += `<div class="app-card">
-                    <b>Name:</b> ${app.name}<br>
-                    <b>Phone:</b> ${app.phone}<br>
-                    <b>Amount:</b> ₹${app.amount}
-                </div>`;
+                listDiv.innerHTML += `<div class="app-card"><b>Name:</b> ${app.name}<br><b>Phone:</b> ${app.phone}<br><b>Amount:</b> ₹${app.amount}</div>`;
             });
+        });
+    };
+
+    window.openUserManager = async () => {
+        const listDiv = document.getElementById('emailList');
+        document.getElementById('userModal').style.display = 'flex';
+        const snapshot = await get(ref(db, 'users'));
+        const users = snapshot.exists() ? snapshot.val() : {};
+        listDiv.innerHTML = "";
+        Object.keys(users).forEach(uid => {
+            listDiv.innerHTML += `<div class="email-list-item"><span>${users[uid].email}</span></div>`;
         });
     };
 
@@ -263,34 +200,44 @@
             const blob = new Blob([JSON.stringify(snapshot.val(), null, 4)], { type: "application/json" });
             const url = URL.createObjectURL(blob);
             const a = document.createElement("a");
-            a.href = url; a.download = "StarChoice_Backup.json"; a.click();
+            a.href = url; a.download = "Backup.json"; a.click();
         }
     };
 
-    window.openUserManager = () => { document.getElementById('userModal').style.display = 'flex'; switchTab('admin'); };
-
-    window.switchTab = async (type) => {
-        const listDiv = document.getElementById('emailList');
-        const snapshot = await get(ref(db, 'users'));
-        const users = snapshot.exists() ? snapshot.val() : {};
-        listDiv.innerHTML = "";
-        Object.keys(users).forEach(uid => {
-            const u = users[uid];
-            if((type === 'admin' && u.role === 'admin') || (type === 'user' && u.role !== 'admin')) {
-                listDiv.innerHTML += `<div class="email-list-item"><span>${u.email}</span></div>`;
-            }
-        });
-    };
-
-    window.showAlert = (title, msg, color) => {
+    function showAlert(title, msg, color) {
         document.getElementById("alertTitle").innerText = title;
         document.getElementById("alertTitle").style.color = color;
         document.getElementById("alertMsg").innerText = msg;
         document.getElementById("customAlert").style.display = "flex";
+    }
+
+    // Login logic
+    document.getElementById("loginSubmitBtn").onclick = async () => {
+        const email = document.getElementById("loginEmail").value;
+        const pass = document.getElementById("loginPass").value;
+        try {
+            const userCred = await signInWithEmailAndPassword(auth, email, pass);
+            if (email === SUPER_ADMIN) {
+                localStorage.setItem("isAdmin", "true");
+                location.reload();
+            }
+        } catch (err) { document.getElementById("loginError").innerText = "Invalid Login"; }
     };
 
-    window.closeAlert = () => { document.getElementById("customAlert").style.display = "none"; };
-    window.logout = () => { localStorage.removeItem("isAdmin"); auth.signOut(); window.location.href = "index.html"; };
+    // Auto-load and Stats
+    if (localStorage.getItem("isAdmin") === "true") {
+        document.getElementById("authLockOverlay").style.display = "none";
+        document.getElementById("adminContent").style.display = "block";
+        
+        onValue(ref(db, 'applications'), snap => document.getElementById("statApps").innerText = snap.exists() ? Object.keys(snap.val()).length : 0);
+        onValue(ref(db, 'users'), snap => document.getElementById("statUsers").innerText = snap.exists() ? Object.keys(snap.val()).length : 0);
+        onValue(ref(db, 'settings/maintenance'), snap => {
+            const isM = snap.val();
+            document.getElementById("statMaintenance").innerText = isM ? "Maintenance" : "Live";
+            document.getElementById("statMaintenance").style.color = isM ? "#ef4444" : "#22c55e";
+            document.getElementById("maintToggleBtn").innerText = isM ? "⚙️ Disable Maintenance" : "⚙️ Enable Maintenance";
+        });
+    }
 </script>
 
 <script>
