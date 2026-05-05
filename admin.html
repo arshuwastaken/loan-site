@@ -19,100 +19,131 @@
         canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
         .container { max-width: 900px; margin: auto; padding: 40px 20px; position: relative; z-index: 1; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         
-        .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
-        .stat-box { background: rgba(30, 41, 59, 0.8); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); text-align: center; backdrop-filter: blur(5px); }
-        .stat-box h4 { margin: 0; font-size: 11px; color: #94a3b8; text-transform: uppercase; }
-        .stat-box p { margin: 5px 0 0; font-size: 20px; font-weight: 600; color: #22c55e; }
-
-        .settings-card { background: rgba(30, 41, 59, 0.9); padding: 25px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #22c55e; }
+        .settings-card { background: rgba(30, 41, 59, 0.9); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #22c55e; }
         .input-group { display: flex; gap: 10px; margin-top: 15px; }
-        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; font-family: 'Poppins'; }
+        input[type="text"], input[type="email"], input[type="password"] { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; font-family: 'Poppins'; }
 
-        #authLockOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); z-index: 20000; display: flex; justify-content: center; align-items: center; }
+        /* Login Lock Overlay */
+        #authLockOverlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); 
+            backdrop-filter: blur(15px); z-index: 20000; 
+            display: flex; justify-content: center; align-items: center;
+        }
 
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
-        .modal-box { background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #22c55e; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; position: relative; }
+        .modal-overlay { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
+            z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px);
+        }
+        #userModal { z-index: 9000; }
 
-        .btn-main { background: #22c55e; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px; justify-content: center; font-family: 'Poppins'; }
+        .modal-box { 
+            background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; 
+            border: 1px solid #22c55e; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;
+            animation: popUp 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .btn-main { 
+            background: #22c55e; color: white; border: none; padding: 12px 20px; border-radius: 10px; 
+            cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px;
+            font-family: 'Poppins';
+        }
         .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
 
-        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: left; }
+        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); position: relative; text-align: left; }
         
-        .tab-btn-box { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-family: 'Poppins'; font-weight: 600; }
+        .user-item-wrapper { position: relative; }
+        .email-list-item { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .dropdown { position: absolute; right: 10px; top: 40px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; width: 180px; display: none; z-index: 9500; box-shadow: 0 10px 20px rgba(0,0,0,0.5); overflow: hidden; }
+        .dropdown button { width: 100%; padding: 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; font-family: 'Poppins'; transition: 0.2s; }
+        .dropdown button:hover { background: rgba(255,255,255,0.1); }
+        .dropdown .btn-danger:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .dots-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 20px; padding: 5px 10px; transition: 0.2s; border-radius: 5px; }
+        .dots-btn:hover { color: white; background: rgba(255,255,255,0.05); }
+
+        .tab-btn-box { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-weight: 600; transition: 0.3s; }
         .tab-btn.active { color: #22c55e; border-bottom: 2px solid #22c55e; }
-        
-        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); position: relative; }
-        .dots-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 18px; padding: 5px 10px; }
-        
-        /* Fixed Dropdown Position */
-        .dropdown { 
-            position: absolute; right: 40px; top: 10px; 
-            background: #0f172a; border: 1px solid #22c55e; 
-            border-radius: 8px; display: none; z-index: 11000; 
-            min-width: 150px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); 
-        }
-        .dropdown button { width: 100%; padding: 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; font-family: 'Poppins'; }
-        .dropdown button:hover { background: #1e293b; color: #22c55e; }
     </style>
 </head>
 <body>
 
 <canvas id="snow"></canvas>
 
+<!-- Verification Lock Screen -->
 <div id="authLockOverlay">
-    <div class="modal-box" style="max-width: 350px;">
-        <h2>Admin Access</h2>
-        <input type="email" id="loginEmail" placeholder="Admin Gmail">
-        <input type="password" id="loginPass" placeholder="Password" style="margin-top:10px;">
-        <button id="loginSubmitBtn" class="btn-main" style="width:100%; margin-top:20px;">Verify & Unlock</button>
+    <div class="modal-box" style="width: 350px;">
+        <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
+        <h2 style="margin:0; color:white;">Admin Access</h2>
+        <p style="color:#94a3b8; font-size:13px; margin-bottom:20px;">Please verify your identity to continue.</p>
+        
+        <input type="email" id="loginEmail" placeholder="Admin Gmail" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
+        <input type="password" id="loginPass" placeholder="Password" style="width:100%; margin-bottom:20px; box-sizing:border-box;">
+        
+        <button id="loginSubmitBtn" class="btn-main" style="width:100%; justify-content:center;">Verify & Unlock</button>
         <p id="loginError" style="color:#ef4444; font-size:12px; margin-top:10px;"></p>
     </div>
 </div>
 
-<div id="userModal" class="modal-overlay">
+<div id="customAlert" class="modal-overlay">
     <div class="modal-box">
-        <h3>📧 User Management</h3>
+        <h3 id="alertTitle" style="margin-top:0;">Notification</h3>
+        <p id="alertMsg"></p>
+        <div id="alertButtons" style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="btn-main" id="confirmBtn" style="flex: 1; justify-content: center;">OK</button>
+            <button class="btn-main" id="cancelBtn" onclick="closeAlert()" style="flex: 1; justify-content: center; background: #64748b;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="userModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 550px;">
+        <h3 style="margin-top:0; color: #22c55e;">📧 User Management</h3>
         <div class="tab-btn-box">
             <button class="tab-btn active" id="tabAdmin" onclick="switchTab('admin')">Admins</button>
             <button class="tab-btn" id="tabUser" onclick="switchTab('user')">Users</button>
         </div>
-        <div id="emailList" style="min-height: 200px; text-align: left;"></div>
-        <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; background: #ef4444;">Close</button>
+        <div id="emailList" style="min-height: 200px;">
+            <p style="color: #94a3b8;">Fetching records...</p>
+        </div>
+        <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; justify-content: center; background: #ef4444;">Close Management</button>
     </div>
 </div>
 
 <div class="container">
+    <div id="accessDenied" style="display: none; text-align: center; padding-top: 150px;">
+        <h1 style="font-size: 60px;">🚫</h1>
+        <h2>Access Denied</h2>
+        <button class="btn-main" onclick="window.location.href='index.html'">Return Home</button>
+    </div>
+
     <div id="adminContent" style="display: none;">
         <div class="header">
             <h2 style="margin:0;">Admin Control Center 🔐</h2>
-            <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer;">Sign Out</button>
-        </div>
-
-        <div class="stats-row">
-            <div class="stat-box"><h4>Applications</h4><p id="statApps">0</p></div>
-            <div class="stat-box"><h4>System Status</h4><p id="statMaintenance">Live</p></div>
-            <div class="stat-box"><h4>Total Users</h4><p id="statUsers">0</p></div>
+            <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600;">Sign Out</button>
         </div>
 
         <div class="settings-card">
-            <h3>Website Appearance 🖼️</h3>
+            <h3 style="margin:0;">Website Appearance 🖼️</h3>
+            <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Update global background via URL:</p>
             <div class="input-group">
                 <input type="text" id="bgUrlInput" placeholder="Paste image link here">
-                <button class="btn-main" onclick="updateBackground()">Update Theme</button>
+                <button class="btn-main" id="uploadBtn" onclick="updateBackground()">Update Theme</button>
             </div>
         </div>
 
         <div style="display: flex; gap: 15px; margin-bottom: 15px;">
-            <button class="btn-main" style="flex:1;" onclick="loadApplications()">🔍 Sync Records</button>
-            <button class="btn-main" style="flex:1;" onclick="openUserManager()">📧 Manage Users</button>
+            <button class="btn-main" id="fetchBtn" onclick="loadApplications()" style="flex:1; justify-content: center;">🔍 Sync Records</button>
+            <button class="btn-main" onclick="openUserManager()" style="flex:1; justify-content: center;">📧 Manage Users</button>
         </div>
 
         <div style="display: flex; gap: 15px; margin-bottom: 25px;">
-            <button class="btn-main" style="flex:1; background: #3b82f6;" onclick="exportData()">📊 Export JSON</button>
-            <button class="btn-main" id="maintToggleBtn" style="flex:1; background: #8b5cf6;" onclick="toggleMaintenance()">⚙️ Enable Maintenance</button>
+            <button class="btn-main" onclick="exportData()" style="flex:1; justify-content: center; background: #3b82f6;">📊 Export JSON</button>
+            <button class="btn-main" style="flex:1; justify-content: center; background: #8b5cf6; opacity: 0.6; cursor: not-allowed;">⚙️ System Tools</button>
         </div>
 
         <div id="applicationsList"></div>
@@ -121,7 +152,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
     import { getDatabase, ref, onValue, set, get, update, remove } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
     const firebaseConfig = {
@@ -139,119 +170,194 @@
     const auth = getAuth(app);
     const SUPER_ADMIN = "arshshuklabpl@gmail.com";
 
-    window.logout = () => { localStorage.removeItem("isAdmin"); signOut(auth); window.location.href = "index.html"; };
-    
-    window.toggleMaintenance = async () => {
-        const snap = await get(ref(db, 'settings/maintenance'));
-        await set(ref(db, 'settings/maintenance'), !(snap.val() || false));
-    };
+    // Double Verification Logic
+    window.verifyAdmin = async () => {
+        const email = document.getElementById("loginEmail").value.trim();
+        const pass = document.getElementById("loginPass").value;
+        const errorEl = document.getElementById("loginError");
+        const btn = document.getElementById("loginSubmitBtn");
 
-    window.updateBackground = () => {
-        const url = document.getElementById("bgUrlInput").value.trim();
-        if(url) set(ref(db, 'settings/backgroundUrl'), url);
-    };
+        if(!email || !pass) { errorEl.innerText = "Fields cannot be empty!"; return; }
 
-    window.loadApplications = () => {
-        onValue(ref(db, 'applications'), (snap) => {
-            const listDiv = document.getElementById("applicationsList");
-            listDiv.innerHTML = "";
-            const data = snap.val();
-            if(data) Object.keys(data).reverse().forEach(id => {
-                const a = data[id];
-                listDiv.innerHTML += `<div class="app-card"><b>Name:</b> ${a.name}<br><b>Phone:</b> ${a.phone}<br><b>Amount:</b> ₹${a.amount}</div>`;
-            });
-        });
-    };
+        btn.innerText = "Verifying...";
+        btn.disabled = true;
 
-    window.openUserManager = () => { 
-        document.getElementById('userModal').style.display = 'flex'; 
-        window.switchTab('admin'); 
-    };
+        try {
+            const userCred = await signInWithEmailAndPassword(auth, email, pass);
+            const user = userCred.user;
 
-    window.switchTab = (type) => {
-        document.getElementById('tabAdmin').className = type === 'admin' ? 'tab-btn active' : 'tab-btn';
-        document.getElementById('tabUser').className = type === 'user' ? 'tab-btn active' : 'tab-btn';
-        
-        const listDiv = document.getElementById('emailList');
-        
-        onValue(ref(db, 'users'), (snap) => {
-            const users = snap.val() || {};
-            listDiv.innerHTML = "";
+            const snapshot = await get(ref(db, `users/${user.uid}`));
+            const userData = snapshot.val();
 
-            Object.keys(users).forEach(uid => {
-                const u = users[uid];
-                const isAdmin = u.role === 'admin' || u.email === SUPER_ADMIN;
-                
-                if((type === 'admin' && isAdmin) || (type === 'user' && !isAdmin)) {
-                    listDiv.innerHTML += `
-                    <div class="user-item">
-                        <span>${u.email} ${u.email === SUPER_ADMIN ? '👑' : ''}</span>
-                        ${u.email === SUPER_ADMIN ? '' : `
-                            <button class="dots-btn" onclick="event.stopPropagation(); window.toggleDrop('${uid}')">⋮</button>
-                            <div id="drop-${uid}" class="dropdown">
-                                <button onclick="window.updateRole('${uid}', '${u.role === 'admin' ? 'user' : 'admin'}')">${u.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}</button>
-                                <button style="color:#ef4444;" onclick="window.deleteUser('${uid}')">Delete Account</button>
-                            </div>
-                        `}
-                    </div>`;
-                }
-            });
-        });
-    };
-
-    window.toggleDrop = (id) => {
-        const d = document.getElementById('drop-' + id);
-        const isOpen = d.style.display === 'block';
-        document.querySelectorAll('.dropdown').forEach(el => el.style.display = 'none');
-        if(!isOpen) d.style.display = 'block';
-    };
-
-    window.updateRole = (uid, role) => { 
-        update(ref(db, `users/${uid}`), { role }); 
-    };
-
-    window.deleteUser = (uid) => { 
-        if(confirm("Are you sure you want to delete this user?")) {
-            remove(ref(db, `users/${uid}`)); 
+            if (email === SUPER_ADMIN || (userData && userData.role === 'admin')) {
+                localStorage.setItem("isAdmin", "true");
+                document.getElementById("authLockOverlay").style.display = "none";
+                document.getElementById("adminContent").style.display = "block";
+                loadApplications(); 
+            } else {
+                errorEl.innerText = "Access Denied: Not an authorized admin.";
+                btn.innerText = "Verify & Unlock";
+                btn.disabled = false;
+                await auth.signOut();
+            }
+        } catch (err) {
+            errorEl.innerText = "Invalid Gmail or Password!";
+            btn.innerText = "Verify & Unlock";
+            btn.disabled = false;
         }
     };
 
-    window.exportData = async () => {
-        const snap = await get(ref(db, 'applications'));
-        const blob = new Blob([JSON.stringify(snap.val(), null, 4)], { type: "application/json" });
-        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "backup.json"; a.click();
-    };
+    document.getElementById("loginSubmitBtn").onclick = window.verifyAdmin;
 
-    document.getElementById("loginSubmitBtn").onclick = async () => {
-        const email = document.getElementById("loginEmail").value;
-        const pass = document.getElementById("loginPass").value;
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            if(email === SUPER_ADMIN) { 
-                localStorage.setItem("isAdmin", "true"); 
-                location.reload(); 
-            } else {
-                document.getElementById("loginError").innerText = "Access Denied: Not Super Admin";
-            }
-        } catch (e) { document.getElementById("loginError").innerText = "Error: " + e.message; }
-    };
-
+    // Check existing session
     if (localStorage.getItem("isAdmin") === "true") {
         document.getElementById("authLockOverlay").style.display = "none";
         document.getElementById("adminContent").style.display = "block";
-        onValue(ref(db, 'applications'), s => document.getElementById("statApps").innerText = s.exists() ? Object.keys(s.val()).length : 0);
-        onValue(ref(db, 'users'), s => document.getElementById("statUsers").innerText = s.exists() ? Object.keys(s.val()).length : 0);
-        onValue(ref(db, 'settings/maintenance'), s => {
-            const m = s.val();
-            document.getElementById("statMaintenance").innerText = m ? "Maintenance" : "Live";
-            document.getElementById("statMaintenance").style.color = m ? "#ef4444" : "#22c55e";
-            document.getElementById("maintToggleBtn").innerText = m ? "Disable Maintenance" : "Enable Maintenance";
-        });
     }
 
-    document.addEventListener('click', () => {
-        document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+    onValue(ref(db, 'settings/backgroundUrl'), (snapshot) => {
+        const url = snapshot.val();
+        if (url) {
+            let styleTag = document.getElementById('dynamic-bg') || document.createElement('style');
+            styleTag.id = 'dynamic-bg';
+            styleTag.innerHTML = `body::before { background-image: url('${url}') !important; }`;
+            document.head.appendChild(styleTag);
+        }
     });
+
+    window.updateBackground = function() {
+        const url = document.getElementById("bgUrlInput").value.trim();
+        if(!url) { showAlert("Action Required", "Please provide a valid image URL.", "#f1c40f"); return; }
+        set(ref(db, 'settings/backgroundUrl'), url).then(() => {
+            showAlert("Theme Updated", "Background changed successfully.", "#22c55e");
+            document.getElementById("bgUrlInput").value = "";
+        });
+    };
+
+    window.loadApplications = function() {
+        onValue(ref(db, 'applications'), (snapshot) => {
+            const data = snapshot.val();
+            const listDiv = document.getElementById("applicationsList");
+            listDiv.innerHTML = "";
+            if (!data) { listDiv.innerHTML = "<p>No records found.</p>"; return; }
+            Object.keys(data).reverse().forEach(id => {
+                const app = data[id];
+                listDiv.innerHTML += `<div class="app-card">
+                    <div class="detail"><b>Name:</b> ${app.name}</div>
+                    <div class="detail"><b>Phone:</b> ${app.phone}</div>
+                    <div class="detail"><b>Amount:</b> ₹${app.amount}</div>
+                </div>`;
+            });
+        });
+    };
+
+    window.exportData = async () => {
+        try {
+            showAlert("Processing", "Generating backup file...", "#3b82f6");
+            const snapshot = await get(ref(db, 'applications'));
+            if (!snapshot.exists()) { showAlert("Error", "No data found.", "#ef4444"); return; }
+            const data = snapshot.val();
+            const blob = new Blob([JSON.stringify(data, null, 4)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "Star_Choice_Backup.json";
+            link.click();
+            showAlert("Export Complete", "JSON saved.", "#22c55e");
+        } catch (e) { showAlert("Error", e.message, "#ef4444"); }
+    };
+
+    window.openUserManager = () => { document.getElementById('userModal').style.display = 'flex'; switchTab('admin'); };
+
+    window.switchTab = async (type) => {
+        const listDiv = document.getElementById('emailList');
+        document.getElementById('tabAdmin').className = type === 'admin' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tabUser').className = type === 'user' ? 'tab-btn active' : 'tab-btn';
+        listDiv.innerHTML = "<p>Loading...</p>";
+        const snapshot = await get(ref(db, 'users'));
+        const users = snapshot.exists() ? snapshot.val() : {};
+        listDiv.innerHTML = "";
+        if(type === 'admin') {
+            listDiv.innerHTML = `<div class="email-list-item" style="background: rgba(241, 196, 15, 0.1); border-radius:8px; margin-bottom:5px;"><span>👑 ${SUPER_ADMIN} (Owner)</span></div>`;
+        }
+        Object.keys(users).forEach(uid => {
+            const u = users[uid];
+            if(u.email === SUPER_ADMIN) return;
+            const isAdmin = u.role === 'admin';
+            const isBanned = u.role === 'banned';
+            if((type === 'admin' && isAdmin) || (type === 'user' && !isAdmin)) {
+                listDiv.innerHTML += `
+                    <div class="user-item-wrapper">
+                        <div class="email-list-item">
+                            <span>${isAdmin ? '⭐' : '👤'} ${u.email} ${isBanned ? '<b style="color:#ef4444;">(BANNED)</b>' : ''}</span>
+                            <button class="dots-btn" onclick="toggleDropdown('${uid}')">⋮</button>
+                        </div>
+                        <div id="drop-${uid}" class="dropdown">
+                            ${isAdmin ? `<button onclick="demoteUser('${uid}', '${u.email}')">⬇️ Demote</button>` : `<button onclick="promoteUser('${uid}', '${u.email}')">⬆️ Promote</button>`}
+                            <button class="btn-danger" onclick="banUser('${uid}', '${u.email}', ${isBanned})">${isBanned ? '✅ Unban' : '🚫 Ban'}</button>
+                            <button class="btn-danger" onclick="removeUser('${uid}', '${u.email}')">🗑️ Remove</button>
+                        </div>
+                    </div>`;
+            }
+        });
+    };
+
+    window.toggleDropdown = (uid) => {
+        const all = document.querySelectorAll('.dropdown');
+        all.forEach(d => { if(d.id !== `drop-${uid}`) d.style.display = 'none'; });
+        const el = document.getElementById(`drop-${uid}`);
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    };
+
+    window.promoteUser = (uid, email) => {
+        showAlert("Confirm Promotion", `Make ${email} Admin?`, "#22c55e", true, () => {
+            update(ref(db, `users/${uid}`), { role: 'admin' }).then(() => { switchTab('user'); });
+        });
+    };
+
+    window.demoteUser = (uid, email) => {
+        showAlert("Confirm Demotion", `Remove Admin rights?`, "#f1c40f", true, () => {
+            update(ref(db, `users/${uid}`), { role: 'user' }).then(() => { switchTab('admin'); });
+        });
+    };
+
+    window.removeUser = (uid, email) => {
+        showAlert("Confirm Removal", `Delete ${email}?`, "#ef4444", true, () => {
+            remove(ref(db, `users/${uid}`)).then(() => { 
+                const currentTab = document.getElementById('tabAdmin').classList.contains('active') ? 'admin' : 'user';
+                switchTab(currentTab); 
+            });
+        });
+    };
+
+    window.banUser = (uid, email, isBanned) => {
+        const newRole = isBanned ? "user" : "banned";
+        showAlert(`Confirm Action`, `${isBanned ? 'Unban' : 'Ban'} ${email}?`, "#ef4444", true, () => {
+            update(ref(db, `users/${uid}`), { role: newRole }).then(() => { 
+                const currentTab = document.getElementById('tabAdmin').classList.contains('active') ? 'admin' : 'user';
+                switchTab(currentTab); 
+            });
+        });
+    };
+
+    window.showAlert = (title, msg, color, isConfirm = false, onConfirm = null) => {
+        document.getElementById("alertTitle").innerText = title;
+        document.getElementById("alertTitle").style.color = color;
+        document.getElementById("alertMsg").innerText = msg;
+        document.getElementById("cancelBtn").style.display = isConfirm ? "block" : "none";
+        document.getElementById("confirmBtn").onclick = () => { closeAlert(); if(onConfirm) onConfirm(); };
+        document.getElementById("customAlert").style.display = "flex";
+    };
+
+    window.closeAlert = () => { document.getElementById("customAlert").style.display = "none"; };
+    window.logout = () => { localStorage.removeItem("isAdmin"); auth.signOut(); window.location.href = "index.html"; };
+    
+    document.addEventListener('click', (e) => {
+        if (!e.target.matches('.dots-btn')) {
+            document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+        }
+    });
+
 </script>
 
 <script>
@@ -263,7 +369,8 @@
     for(let i=0;i<80;i++){ snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, d: Math.random()*1 }); }
     function drawSnow(){
         ctx.clearRect(0,0,canvas.width,canvas.height);
-        ctx.fillStyle = "white"; ctx.beginPath();
+        ctx.fillStyle = "white";
+        ctx.beginPath();
         for(let f of snowflakes){ ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true); }
         ctx.fill();
         for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; } }
