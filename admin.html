@@ -23,69 +23,57 @@
         
         .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 25px; }
         .stat-box { background: rgba(30, 41, 59, 0.8); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); text-align: center; backdrop-filter: blur(5px); }
-        .stat-box h4 { margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-box h4 { margin: 0; font-size: 11px; color: #94a3b8; text-transform: uppercase; }
         .stat-box p { margin: 5px 0 0; font-size: 20px; font-weight: 600; color: #22c55e; }
 
         .settings-card { background: rgba(30, 41, 59, 0.9); padding: 25px; border-radius: 15px; margin-bottom: 25px; border: 1px solid #22c55e; }
         .input-group { display: flex; gap: 10px; margin-top: 15px; }
-        input[type="text"], input[type="email"], input[type="password"] { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; font-family: 'Poppins'; }
+        input { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; font-family: 'Poppins'; }
 
-        #authLockOverlay {
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); 
-            backdrop-filter: blur(15px); z-index: 20000; 
-            display: flex; justify-content: center; align-items: center;
-        }
+        #authLockOverlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); z-index: 20000; display: flex; justify-content: center; align-items: center; }
 
-        .modal-overlay { 
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
-            z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px);
-        }
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px); }
+        .modal-box { background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; border: 1px solid #22c55e; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; position: relative; }
 
-        .modal-box { 
-            background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; 
-            border: 1px solid #22c55e; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;
-        }
-
-        .btn-main { 
-            background: #22c55e; color: white; border: none; padding: 12px 20px; border-radius: 10px; 
-            cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px;
-            font-family: 'Poppins'; justify-content: center;
-        }
+        .btn-main { background: #22c55e; color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px; justify-content: center; font-family: 'Poppins'; }
         .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
 
-        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); text-align: left; }
+        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: left; }
         
-        .email-list-item { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        /* User Management Styles */
+        .tab-btn-box { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-family: 'Poppins'; }
+        .tab-btn.active { color: #22c55e; border-bottom: 2px solid #22c55e; }
+        
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; }
+        .dots-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 18px; }
+        
+        .dropdown { position: absolute; right: 40px; top: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; display: none; z-index: 100; min-width: 120px; overflow: hidden; }
+        .dropdown button { width: 100%; padding: 10px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 12px; }
+        .dropdown button:hover { background: #1e293b; }
     </style>
 </head>
 <body>
 
 <canvas id="snow"></canvas>
 
-<!-- Login Lock -->
 <div id="authLockOverlay">
-    <div class="modal-box" style="width: 350px;">
+    <div class="modal-box" style="max-width: 350px;">
         <h2>Admin Access</h2>
-        <input type="email" id="loginEmail" placeholder="Admin Gmail" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
-        <input type="password" id="loginPass" placeholder="Password" style="width:100%; margin-bottom:20px; box-sizing:border-box;">
-        <button id="loginSubmitBtn" class="btn-main" style="width:100%;">Verify & Unlock</button>
+        <input type="email" id="loginEmail" placeholder="Admin Gmail">
+        <input type="password" id="loginPass" placeholder="Password" style="margin-top:10px;">
+        <button id="loginSubmitBtn" class="btn-main" style="width:100%; margin-top:20px;">Verify & Unlock</button>
         <p id="loginError" style="color:#ef4444; font-size:12px; margin-top:10px;"></p>
     </div>
 </div>
 
-<!-- Alert Modal -->
-<div id="customAlert" class="modal-overlay">
-    <div class="modal-box">
-        <h3 id="alertTitle">Notification</h3>
-        <p id="alertMsg"></p>
-        <button class="btn-main" onclick="closeAlert()" style="width: 100%;">OK</button>
-    </div>
-</div>
-
-<!-- User Management Modal -->
 <div id="userModal" class="modal-overlay">
-    <div class="modal-box" style="max-width: 550px;">
+    <div class="modal-box">
         <h3>📧 User Management</h3>
+        <div class="tab-btn-box">
+            <button class="tab-btn active" id="tabAdmin" onclick="switchTab('admin')">Admins</button>
+            <button class="tab-btn" id="tabUser" onclick="switchTab('user')">Users</button>
+        </div>
         <div id="emailList" style="min-height: 200px; text-align: left;"></div>
         <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; background: #ef4444;">Close</button>
     </div>
@@ -99,18 +87,9 @@
         </div>
 
         <div class="stats-row">
-            <div class="stat-box">
-                <h4>Applications</h4>
-                <p id="statApps">0</p>
-            </div>
-            <div class="stat-box">
-                <h4>System Status</h4>
-                <p id="statMaintenance">Live</p>
-            </div>
-            <div class="stat-box">
-                <h4>Total Users</h4>
-                <p id="statUsers">0</p>
-            </div>
+            <div class="stat-box"><h4>Applications</h4><p id="statApps">0</p></div>
+            <div class="stat-box"><h4>System Status</h4><p id="statMaintenance">Live</p></div>
+            <div class="stat-box"><h4>Total Users</h4><p id="statUsers">0</p></div>
         </div>
 
         <div class="settings-card">
@@ -138,7 +117,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
     import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, set, get } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set, get, update, remove } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
@@ -155,89 +134,99 @@
     const auth = getAuth(app);
     const SUPER_ADMIN = "arshshuklabpl@gmail.com";
 
-    // Attach to window for HTML access
+    // Global Window Functions
     window.logout = () => { localStorage.removeItem("isAdmin"); signOut(auth); window.location.href = "index.html"; };
-    window.closeAlert = () => { document.getElementById("customAlert").style.display = "none"; };
     
     window.toggleMaintenance = async () => {
         const snap = await get(ref(db, 'settings/maintenance'));
-        const currentState = snap.val() || false;
-        await set(ref(db, 'settings/maintenance'), !currentState);
+        await set(ref(db, 'settings/maintenance'), !(snap.val() || false));
     };
 
     window.updateBackground = () => {
         const url = document.getElementById("bgUrlInput").value.trim();
-        if(url) set(ref(db, 'settings/backgroundUrl'), url).then(() => showAlert("Success", "Background Updated", "#22c55e"));
+        if(url) set(ref(db, 'settings/backgroundUrl'), url);
     };
 
     window.loadApplications = () => {
-        onValue(ref(db, 'applications'), (snapshot) => {
-            const data = snapshot.val();
+        onValue(ref(db, 'applications'), (snap) => {
             const listDiv = document.getElementById("applicationsList");
             listDiv.innerHTML = "";
-            if (!data) return;
-            Object.keys(data).reverse().forEach(id => {
-                const app = data[id];
-                listDiv.innerHTML += `<div class="app-card"><b>Name:</b> ${app.name}<br><b>Phone:</b> ${app.phone}<br><b>Amount:</b> ₹${app.amount}</div>`;
+            const data = snap.val();
+            if(data) Object.keys(data).reverse().forEach(id => {
+                const a = data[id];
+                listDiv.innerHTML += `<div class="app-card"><b>Name:</b> ${a.name}<br><b>Phone:</b> ${a.phone}<br><b>Amount:</b> ₹${a.amount}</div>`;
             });
         });
     };
 
-    window.openUserManager = async () => {
+    window.openUserManager = () => { document.getElementById('userModal').style.display = 'flex'; window.switchTab('admin'); };
+
+    window.switchTab = async (type) => {
+        document.getElementById('tabAdmin').className = type === 'admin' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tabUser').className = type === 'user' ? 'tab-btn active' : 'tab-btn';
+        
         const listDiv = document.getElementById('emailList');
-        document.getElementById('userModal').style.display = 'flex';
-        const snapshot = await get(ref(db, 'users'));
-        const users = snapshot.exists() ? snapshot.val() : {};
+        const snap = await get(ref(db, 'users'));
+        const users = snap.val() || {};
         listDiv.innerHTML = "";
+
         Object.keys(users).forEach(uid => {
-            listDiv.innerHTML += `<div class="email-list-item"><span>${users[uid].email}</span></div>`;
+            const u = users[uid];
+            const isAdmin = u.role === 'admin';
+            if((type === 'admin' && (isAdmin || u.email === SUPER_ADMIN)) || (type === 'user' && !isAdmin && u.email !== SUPER_ADMIN)) {
+                listDiv.innerHTML += `
+                <div class="user-item">
+                    <span>${u.email}</span>
+                    ${u.email === SUPER_ADMIN ? '👑' : `
+                        <button class="dots-btn" onclick="document.getElementById('drop-${uid}').style.display='block'">⋮</button>
+                        <div id="drop-${uid}" class="dropdown">
+                            <button onclick="updateRole('${uid}', '${isAdmin ? 'user' : 'admin'}')">${isAdmin ? 'Demote' : 'Promote'}</button>
+                            <button style="color:#ef4444;" onclick="deleteUser('${uid}')">Delete</button>
+                        </div>
+                    `}
+                </div>`;
+            }
         });
     };
 
-    window.exportData = async () => {
-        const snapshot = await get(ref(db, 'applications'));
-        if (snapshot.exists()) {
-            const blob = new Blob([JSON.stringify(snapshot.val(), null, 4)], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url; a.download = "Backup.json"; a.click();
-        }
-    };
+    window.updateRole = (uid, role) => { update(ref(db, `users/${uid}`), { role }).then(() => window.switchTab('admin')); };
+    window.deleteUser = (uid) => { remove(ref(db, `users/${uid}`)).then(() => window.switchTab('user')); };
 
-    function showAlert(title, msg, color) {
-        document.getElementById("alertTitle").innerText = title;
-        document.getElementById("alertTitle").style.color = color;
-        document.getElementById("alertMsg").innerText = msg;
-        document.getElementById("customAlert").style.display = "flex";
-    }
+    window.exportData = async () => {
+        const snap = await get(ref(db, 'applications'));
+        const blob = new Blob([JSON.stringify(snap.val(), null, 4)], { type: "application/json" });
+        const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "backup.json"; a.click();
+    };
 
     // Login logic
     document.getElementById("loginSubmitBtn").onclick = async () => {
         const email = document.getElementById("loginEmail").value;
         const pass = document.getElementById("loginPass").value;
         try {
-            const userCred = await signInWithEmailAndPassword(auth, email, pass);
-            if (email === SUPER_ADMIN) {
-                localStorage.setItem("isAdmin", "true");
-                location.reload();
-            }
-        } catch (err) { document.getElementById("loginError").innerText = "Invalid Login"; }
+            await signInWithEmailAndPassword(auth, email, pass);
+            if(email === SUPER_ADMIN) { localStorage.setItem("isAdmin", "true"); location.reload(); }
+        } catch (e) { document.getElementById("loginError").innerText = "Error!"; }
     };
 
-    // Auto-load and Stats
     if (localStorage.getItem("isAdmin") === "true") {
         document.getElementById("authLockOverlay").style.display = "none";
         document.getElementById("adminContent").style.display = "block";
-        
-        onValue(ref(db, 'applications'), snap => document.getElementById("statApps").innerText = snap.exists() ? Object.keys(snap.val()).length : 0);
-        onValue(ref(db, 'users'), snap => document.getElementById("statUsers").innerText = snap.exists() ? Object.keys(snap.val()).length : 0);
-        onValue(ref(db, 'settings/maintenance'), snap => {
-            const isM = snap.val();
-            document.getElementById("statMaintenance").innerText = isM ? "Maintenance" : "Live";
-            document.getElementById("statMaintenance").style.color = isM ? "#ef4444" : "#22c55e";
-            document.getElementById("maintToggleBtn").innerText = isM ? "⚙️ Disable Maintenance" : "⚙️ Enable Maintenance";
+        onValue(ref(db, 'applications'), s => document.getElementById("statApps").innerText = s.exists() ? Object.keys(s.val()).length : 0);
+        onValue(ref(db, 'users'), s => document.getElementById("statUsers").innerText = s.exists() ? Object.keys(s.val()).length : 0);
+        onValue(ref(db, 'settings/maintenance'), s => {
+            const m = s.val();
+            document.getElementById("statMaintenance").innerText = m ? "Maintenance" : "Live";
+            document.getElementById("statMaintenance").style.color = m ? "#ef4444" : "#22c55e";
+            document.getElementById("maintToggleBtn").innerText = m ? "Disable Maintenance" : "Enable Maintenance";
         });
     }
+
+    // Close dropdowns on click outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.matches('.dots-btn')) {
+            document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+        }
+    });
 </script>
 
 <script>
@@ -255,7 +244,6 @@
         for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; } }
     }
     setInterval(drawSnow, 30);
-    window.onresize = resize;
 </script>
 </body>
 </html>
