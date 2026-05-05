@@ -1,6 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Star Choice - Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        html { opacity: 0; animation: fadeInPage 0.8s ease-in forwards; }
+        @keyframes fadeInPage { from { opacity: 0; } to { opacity: 1; } }
+
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: #0f172a; color: white; min-height: 100vh; overflow-x: hidden; }
+        
+        body::before { 
+            content: ""; position: fixed; inset: 0; 
+            background: url('bg.png') center/cover no-repeat; 
+            z-index: -2; opacity: 0.4; transition: background 0.5s ease-in-out; 
+        }
+        
+        canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+        .container { max-width: 900px; margin: auto; padding: 40px 20px; position: relative; z-index: 1; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        
+        .settings-card { background: rgba(30, 41, 59, 0.9); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #22c55e; }
+        .input-group { display: flex; gap: 10px; margin-top: 15px; }
+        input[type="text"], input[type="email"], input[type="password"] { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; font-family: 'Poppins'; }
+
+        /* Login Lock Overlay */
+        #authLockOverlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); 
+            backdrop-filter: blur(15px); z-index: 20000; 
+            display: flex; justify-content: center; align-items: center;
+        }
+
+        .modal-overlay { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
+            z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px);
+        }
+        #userModal { z-index: 9000; }
+
+        .modal-box { 
+            background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; 
+            border: 1px solid #22c55e; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;
+            animation: popUp 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        .btn-main { 
+            background: #22c55e; color: white; border: none; padding: 12px 20px; border-radius: 10px; 
+            cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px;
+            font-family: 'Poppins';
+        }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
+
+        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); position: relative; text-align: left; }
+        
+        .user-item-wrapper { position: relative; }
+        .email-list-item { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
+        
+        .dropdown { position: absolute; right: 10px; top: 40px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; width: 180px; display: none; z-index: 9500; box-shadow: 0 10px 20px rgba(0,0,0,0.5); overflow: hidden; }
+        .dropdown button { width: 100%; padding: 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; font-family: 'Poppins'; transition: 0.2s; }
+        .dropdown button:hover { background: rgba(255,255,255,0.1); }
+        .dropdown .btn-danger:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+
+        .dots-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 20px; padding: 5px 10px; transition: 0.2s; border-radius: 5px; }
+        .dots-btn:hover { color: white; background: rgba(255,255,255,0.05); }
+
+        .tab-btn-box { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .tab-btn.active { color: #22c55e; border-bottom: 2px solid #22c55e; }
+    </style>
+</head>
+<body>
+
+<canvas id="snow"></canvas>
+
+<!-- Verification Lock Screen -->
+<div id="authLockOverlay">
+    <div class="modal-box" style="width: 350px;">
+        <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
+        <h2 style="margin:0; color:white;">Admin Access</h2>
+        <p style="color:#94a3b8; font-size:13px; margin-bottom:20px;">Please verify your identity to continue.</p>
+        
+        <input type="email" id="loginEmail" placeholder="Admin Gmail" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
+        <input type="password" id="loginPass" placeholder="Password" style="width:100%; margin-bottom:20px; box-sizing:border-box;">
+        
+        <button id="loginSubmitBtn" class="btn-main" style="width:100%; justify-content:center;">Verify & Unlock</button>
+        <p id="loginError" style="color:#ef4444; font-size:12px; margin-top:10px;"></p>
+    </div>
+</div>
+
+<div id="customAlert" class="modal-overlay">
+    <div class="modal-box">
+        <h3 id="alertTitle" style="margin-top:0;">Notification</h3>
+        <p id="alertMsg"></p>
+        <div id="alertButtons" style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="btn-main" id="confirmBtn" style="flex: 1; justify-content: center;">OK</button>
+            <button class="btn-main" id="cancelBtn" onclick="closeAlert()" style="flex: 1; justify-content: center; background: #64748b;">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="userModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 550px;">
+        <h3 style="margin-top:0; color: #22c55e;">📧 User Management</h3>
+        <div class="tab-btn-box">
+            <button class="tab-btn active" id="tabAdmin" onclick="switchTab('admin')">Admins</button>
+            <button class="tab-btn" id="tabUser" onclick="switchTab('user')">Users</button>
+        </div>
+        <div id="emailList" style="min-height: 200px;">
+            <p style="color: #94a3b8;">Fetching records...</p>
+        </div>
+        <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; justify-content: center; background: #ef4444;">Close Management</button>
+    </div>
+</div>
+
+<div class="container">
+    <div id="accessDenied" style="display: none; text-align: center; padding-top: 150px;">
+        <h1 style="font-size: 60px;">🚫</h1>
+        <h2>Access Denied</h2>
+        <button class="btn-main" onclick="window.location.href='index.html'">Return Home</button>
+    </div>
+
+    <div id="adminContent" style="display: none;">
+        <div class="header">
+            <h2 style="margin:0;">Admin Control Center 🔐</h2>
+            <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600;">Sign Out</button>
+        </div>
+
+        <div class="settings-card">
+            <h3 style="margin:0;">Website Appearance 🖼️</h3>
+            <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Update global background via URL:</p>
+            <div class="input-group">
+                <input type="text" id="bgUrlInput" placeholder="Paste image link here">
+                <button class="btn-main" id="uploadBtn" onclick="updateBackground()">Update Theme</button>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+            <button class="btn-main" id="fetchBtn" onclick="loadApplications()" style="flex:1; justify-content: center;">🔍 Sync Records</button>
+            <button class="btn-main" onclick="openUserManager()" style="flex:1; justify-content: center;">📧 Manage Users</button>
+        </div>
+
+        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+            <button class="btn-main" onclick="exportData()" style="flex:1; justify-content: center; background: #3b82f6;">📊 Export JSON</button>
+            <button class="btn-main" style="flex:1; justify-content: center; background: #8b5cf6; opacity: 0.6; cursor: not-allowed;">⚙️ System Tools</button>
+        </div>
+
+        <div id="applicationsList"></div>
+    </div>
+</div>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
     import { getDatabase, ref, onValue, set, get, update, remove } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
     const firebaseConfig = {
@@ -18,35 +170,7 @@
     const auth = getAuth(app);
     const SUPER_ADMIN = "arshshuklabpl@gmail.com";
 
-    // --- 1. PERSISTENT AUTH CHECK (Bina login screen ke entry) ---
-    onAuthStateChanged(auth, async (user) => {
-        if (user) {
-            // Check if user is actually an admin in Database
-            const snapshot = await get(ref(db, `users/${user.uid}`));
-            const userData = snapshot.val();
-
-            if (user.email === SUPER_ADMIN || (userData && userData.role === 'admin')) {
-                // Admin confirmed: Unlock Panel
-                localStorage.setItem("isAdmin", "true");
-                document.getElementById("authLockOverlay").style.display = "none";
-                document.getElementById("adminContent").style.display = "block";
-                document.getElementById("accessDenied").style.display = "none";
-                loadApplications(); 
-            } else {
-                // Not an admin: Show Denied
-                document.getElementById("authLockOverlay").style.display = "none";
-                document.getElementById("adminContent").style.display = "none";
-                document.getElementById("accessDenied").style.display = "block";
-            }
-        } else {
-            // No user logged in: Show Login Screen
-            localStorage.removeItem("isAdmin");
-            document.getElementById("authLockOverlay").style.display = "flex";
-            document.getElementById("adminContent").style.display = "none";
-        }
-    });
-
-    // --- 2. LOGIN WITH PERSISTENCE ---
+    // Double Verification Logic
     window.verifyAdmin = async () => {
         const email = document.getElementById("loginEmail").value.trim();
         const pass = document.getElementById("loginPass").value;
@@ -59,10 +183,23 @@
         btn.disabled = true;
 
         try {
-            // "browserLocalPersistence" se login session browser mein save ho jata hai
-            await setPersistence(auth, browserLocalPersistence);
-            await signInWithEmailAndPassword(auth, email, pass);
-            // onAuthStateChanged apne aap panel unlock kar dega login hote hi
+            const userCred = await signInWithEmailAndPassword(auth, email, pass);
+            const user = userCred.user;
+
+            const snapshot = await get(ref(db, `users/${user.uid}`));
+            const userData = snapshot.val();
+
+            if (email === SUPER_ADMIN || (userData && userData.role === 'admin')) {
+                localStorage.setItem("isAdmin", "true");
+                document.getElementById("authLockOverlay").style.display = "none";
+                document.getElementById("adminContent").style.display = "block";
+                loadApplications(); 
+            } else {
+                errorEl.innerText = "Access Denied: Not an authorized admin.";
+                btn.innerText = "Verify & Unlock";
+                btn.disabled = false;
+                await auth.signOut();
+            }
         } catch (err) {
             errorEl.innerText = "Invalid Gmail or Password!";
             btn.innerText = "Verify & Unlock";
@@ -72,7 +209,11 @@
 
     document.getElementById("loginSubmitBtn").onclick = window.verifyAdmin;
 
-    // --- BAAKI FUNCTIONS SAME RAHENGE ---
+    // Check existing session
+    if (localStorage.getItem("isAdmin") === "true") {
+        document.getElementById("authLockOverlay").style.display = "none";
+        document.getElementById("adminContent").style.display = "block";
+    }
 
     onValue(ref(db, 'settings/backgroundUrl'), (snapshot) => {
         const url = snapshot.val();
@@ -209,18 +350,33 @@
     };
 
     window.closeAlert = () => { document.getElementById("customAlert").style.display = "none"; };
-    
-    // Sign Out karne par hamesha storage clear hoga
-    window.logout = () => { 
-        localStorage.removeItem("isAdmin"); 
-        auth.signOut().then(() => {
-            window.location.href = "index.html"; 
-        });
-    };
+    window.logout = () => { localStorage.removeItem("isAdmin"); auth.signOut(); window.location.href = "index.html"; };
     
     document.addEventListener('click', (e) => {
         if (!e.target.matches('.dots-btn')) {
             document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
         }
     });
+
 </script>
+
+<script>
+    const canvas = document.getElementById("snow");
+    const ctx = canvas.getContext("2d");
+    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    let snowflakes = [];
+    for(let i=0;i<80;i++){ snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, d: Math.random()*1 }); }
+    function drawSnow(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        for(let f of snowflakes){ ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true); }
+        ctx.fill();
+        for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; } }
+    }
+    setInterval(drawSnow, 30);
+    window.onresize = resize;
+</script>
+</body>
+</html>
