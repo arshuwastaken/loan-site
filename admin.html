@@ -46,11 +46,11 @@
         .tab-btn.active { color: #22c55e; border-bottom: 2px solid #22c55e; }
         
         .user-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; }
-        .dots-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 18px; }
+        .dots-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 18px; padding: 5px 10px; }
         
-        .dropdown { position: absolute; right: 40px; top: 10px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; display: none; z-index: 100; min-width: 120px; overflow: hidden; }
-        .dropdown button { width: 100%; padding: 10px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 12px; }
-        .dropdown button:hover { background: #1e293b; }
+        .dropdown { position: absolute; right: 10px; top: 45px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; display: none; z-index: 100; min-width: 130px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        .dropdown button { width: 100%; padding: 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; font-family: 'Poppins'; }
+        .dropdown button:hover { background: #1e293b; color: #22c55e; }
     </style>
 </head>
 <body>
@@ -172,16 +172,17 @@
 
         Object.keys(users).forEach(uid => {
             const u = users[uid];
-            const isAdmin = u.role === 'admin';
-            if((type === 'admin' && (isAdmin || u.email === SUPER_ADMIN)) || (type === 'user' && !isAdmin && u.email !== SUPER_ADMIN)) {
+            const isAdmin = u.role === 'admin' || u.email === SUPER_ADMIN;
+            
+            if((type === 'admin' && isAdmin) || (type === 'user' && !isAdmin)) {
                 listDiv.innerHTML += `
                 <div class="user-item">
                     <span>${u.email}</span>
                     ${u.email === SUPER_ADMIN ? '👑' : `
-                        <button class="dots-btn" onclick="document.getElementById('drop-${uid}').style.display='block'">⋮</button>
+                        <button class="dots-btn" onclick="toggleDrop('${uid}')">⋮</button>
                         <div id="drop-${uid}" class="dropdown">
-                            <button onclick="updateRole('${uid}', '${isAdmin ? 'user' : 'admin'}')">${isAdmin ? 'Demote' : 'Promote'}</button>
-                            <button style="color:#ef4444;" onclick="deleteUser('${uid}')">Delete</button>
+                            <button onclick="updateRole('${uid}', '${u.role === 'admin' ? 'user' : 'admin'}')">${u.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}</button>
+                            <button style="color:#ef4444;" onclick="deleteUser('${uid}')">Delete Account</button>
                         </div>
                     `}
                 </div>`;
@@ -189,8 +190,24 @@
         });
     };
 
-    window.updateRole = (uid, role) => { update(ref(db, `users/${uid}`), { role }).then(() => window.switchTab('admin')); };
-    window.deleteUser = (uid) => { remove(ref(db, `users/${uid}`)).then(() => window.switchTab('user')); };
+    window.toggleDrop = (id) => {
+        const d = document.getElementById('drop-' + id);
+        const isOpen = d.style.display === 'block';
+        document.querySelectorAll('.dropdown').forEach(el => el.style.display = 'none');
+        if(!isOpen) d.style.display = 'block';
+    };
+
+    window.updateRole = (uid, role) => { 
+        update(ref(db, `users/${uid}`), { role }).then(() => {
+            window.switchTab(role === 'admin' ? 'admin' : 'user');
+        }); 
+    };
+
+    window.deleteUser = (uid) => { 
+        if(confirm("Are you sure you want to delete this user?")) {
+            remove(ref(db, `users/${uid}`)).then(() => window.switchTab('user')); 
+        }
+    };
 
     window.exportData = async () => {
         const snap = await get(ref(db, 'applications'));
@@ -204,8 +221,13 @@
         const pass = document.getElementById("loginPass").value;
         try {
             await signInWithEmailAndPassword(auth, email, pass);
-            if(email === SUPER_ADMIN) { localStorage.setItem("isAdmin", "true"); location.reload(); }
-        } catch (e) { document.getElementById("loginError").innerText = "Error!"; }
+            if(email === SUPER_ADMIN) { 
+                localStorage.setItem("isAdmin", "true"); 
+                location.reload(); 
+            } else {
+                document.getElementById("loginError").innerText = "Access Denied: Not Super Admin";
+            }
+        } catch (e) { document.getElementById("loginError").innerText = "Error: " + e.message; }
     };
 
     if (localStorage.getItem("isAdmin") === "true") {
@@ -244,6 +266,7 @@
         for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; } }
     }
     setInterval(drawSnow, 30);
+    window.onresize = resize;
 </script>
 </body>
 </html>
