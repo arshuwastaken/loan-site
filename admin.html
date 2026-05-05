@@ -40,15 +40,20 @@
 
         .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: left; }
         
-        /* User Management Styles */
         .tab-btn-box { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; }
-        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-family: 'Poppins'; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-family: 'Poppins'; font-weight: 600; }
         .tab-btn.active { color: #22c55e; border-bottom: 2px solid #22c55e; }
         
-        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); position: relative; }
+        .user-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); position: relative; }
         .dots-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 18px; padding: 5px 10px; }
         
-        .dropdown { position: absolute; right: 10px; top: 45px; background: #0f172a; border: 1px solid #334155; border-radius: 8px; display: none; z-index: 100; min-width: 130px; box-shadow: 0 10px 20px rgba(0,0,0,0.5); }
+        /* Fixed Dropdown Position */
+        .dropdown { 
+            position: absolute; right: 40px; top: 10px; 
+            background: #0f172a; border: 1px solid #22c55e; 
+            border-radius: 8px; display: none; z-index: 11000; 
+            min-width: 150px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); 
+        }
         .dropdown button { width: 100%; padding: 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; font-family: 'Poppins'; }
         .dropdown button:hover { background: #1e293b; color: #22c55e; }
     </style>
@@ -134,7 +139,6 @@
     const auth = getAuth(app);
     const SUPER_ADMIN = "arshshuklabpl@gmail.com";
 
-    // Global Window Functions
     window.logout = () => { localStorage.removeItem("isAdmin"); signOut(auth); window.location.href = "index.html"; };
     
     window.toggleMaintenance = async () => {
@@ -159,34 +163,39 @@
         });
     };
 
-    window.openUserManager = () => { document.getElementById('userModal').style.display = 'flex'; window.switchTab('admin'); };
+    window.openUserManager = () => { 
+        document.getElementById('userModal').style.display = 'flex'; 
+        window.switchTab('admin'); 
+    };
 
-    window.switchTab = async (type) => {
+    window.switchTab = (type) => {
         document.getElementById('tabAdmin').className = type === 'admin' ? 'tab-btn active' : 'tab-btn';
         document.getElementById('tabUser').className = type === 'user' ? 'tab-btn active' : 'tab-btn';
         
         const listDiv = document.getElementById('emailList');
-        const snap = await get(ref(db, 'users'));
-        const users = snap.val() || {};
-        listDiv.innerHTML = "";
+        
+        onValue(ref(db, 'users'), (snap) => {
+            const users = snap.val() || {};
+            listDiv.innerHTML = "";
 
-        Object.keys(users).forEach(uid => {
-            const u = users[uid];
-            const isAdmin = u.role === 'admin' || u.email === SUPER_ADMIN;
-            
-            if((type === 'admin' && isAdmin) || (type === 'user' && !isAdmin)) {
-                listDiv.innerHTML += `
-                <div class="user-item">
-                    <span>${u.email}</span>
-                    ${u.email === SUPER_ADMIN ? '👑' : `
-                        <button class="dots-btn" onclick="toggleDrop('${uid}')">⋮</button>
-                        <div id="drop-${uid}" class="dropdown">
-                            <button onclick="updateRole('${uid}', '${u.role === 'admin' ? 'user' : 'admin'}')">${u.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}</button>
-                            <button style="color:#ef4444;" onclick="deleteUser('${uid}')">Delete Account</button>
-                        </div>
-                    `}
-                </div>`;
-            }
+            Object.keys(users).forEach(uid => {
+                const u = users[uid];
+                const isAdmin = u.role === 'admin' || u.email === SUPER_ADMIN;
+                
+                if((type === 'admin' && isAdmin) || (type === 'user' && !isAdmin)) {
+                    listDiv.innerHTML += `
+                    <div class="user-item">
+                        <span>${u.email} ${u.email === SUPER_ADMIN ? '👑' : ''}</span>
+                        ${u.email === SUPER_ADMIN ? '' : `
+                            <button class="dots-btn" onclick="event.stopPropagation(); window.toggleDrop('${uid}')">⋮</button>
+                            <div id="drop-${uid}" class="dropdown">
+                                <button onclick="window.updateRole('${uid}', '${u.role === 'admin' ? 'user' : 'admin'}')">${u.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}</button>
+                                <button style="color:#ef4444;" onclick="window.deleteUser('${uid}')">Delete Account</button>
+                            </div>
+                        `}
+                    </div>`;
+                }
+            });
         });
     };
 
@@ -198,14 +207,12 @@
     };
 
     window.updateRole = (uid, role) => { 
-        update(ref(db, `users/${uid}`), { role }).then(() => {
-            window.switchTab(role === 'admin' ? 'admin' : 'user');
-        }); 
+        update(ref(db, `users/${uid}`), { role }); 
     };
 
     window.deleteUser = (uid) => { 
         if(confirm("Are you sure you want to delete this user?")) {
-            remove(ref(db, `users/${uid}`)).then(() => window.switchTab('user')); 
+            remove(ref(db, `users/${uid}`)); 
         }
     };
 
@@ -215,7 +222,6 @@
         const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "backup.json"; a.click();
     };
 
-    // Login logic
     document.getElementById("loginSubmitBtn").onclick = async () => {
         const email = document.getElementById("loginEmail").value;
         const pass = document.getElementById("loginPass").value;
@@ -243,11 +249,8 @@
         });
     }
 
-    // Close dropdowns on click outside
-    document.addEventListener('click', (e) => {
-        if (!e.target.matches('.dots-btn')) {
-            document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
-        }
+    document.addEventListener('click', () => {
+        document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
     });
 </script>
 
