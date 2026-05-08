@@ -19,6 +19,26 @@
         canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
         .container { max-width: 900px; margin: auto; padding: 40px 20px; position: relative; z-index: 1; }
         
+        /* Stats Sidebar Styling */
+        .stats-sidebar {
+            position: fixed; top: 20px; right: 20px; z-index: 100;
+            display: none; flex-direction: column; gap: 15px;
+        }
+
+        .stat-box {
+            width: 160px; height: 140px; background: rgba(30, 41, 59, 0.9);
+            border: 2px solid #22c55e; border-radius: 20px; backdrop-filter: blur(10px);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn { from { transform: translateX(50px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+        .stat-box h4 { margin: 0; font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+        .stat-box .count { font-size: 38px; font-weight: 600; color: #22c55e; margin: 5px 0; }
+        .stat-box .sub-text { font-size: 11px; color: #64748b; }
+
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         
         .settings-card { background: rgba(30, 41, 59, 0.9); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #22c55e; }
@@ -68,14 +88,26 @@
         .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-weight: 600; transition: 0.3s; }
         .tab-btn.active { color: #22c55e; border-bottom: 2px solid #22c55e; }
 
-        /* Date selector layout */
         .date-input-container { display: flex; flex-direction: column; text-align: left; gap: 5px; margin-bottom: 15px; }
         .date-input-container label { font-size: 12px; color: #94a3b8; margin-left: 5px; }
+
+        @media (max-width: 1100px) {
+            .stats-sidebar { position: relative; top: 0; right: 0; flex-direction: row; margin-bottom: 20px; justify-content: center; }
+        }
     </style>
 </head>
 <body>
 
 <canvas id="snow"></canvas>
+
+<!-- Top Right Stats Box -->
+<div class="stats-sidebar" id="statsSidebar">
+    <div class="stat-box">
+        <h4>Applications</h4>
+        <div class="count" id="monthCount">--</div>
+        <div class="sub-text">This Month</div>
+    </div>
+</div>
 
 <!-- Verification Lock Screen -->
 <div id="authLockOverlay">
@@ -205,6 +237,22 @@
     const auth = getAuth(app);
     const SUPER_ADMIN = "arshshuklabpl@gmail.com";
 
+    // Counter Sync Logic
+    function syncCounter() {
+        const now = new Date();
+        const currentMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        onValue(ref(db, 'applications'), (snapshot) => {
+            const data = snapshot.val();
+            let count = 0;
+            if (data) {
+                Object.values(data).forEach(app => {
+                    if (app.date && app.date.startsWith(currentMonth)) count++;
+                });
+            }
+            document.getElementById("monthCount").innerText = count;
+        });
+    }
+
     window.verifyAdmin = async () => {
         const email = document.getElementById("loginEmail").value.trim();
         const pass = document.getElementById("loginPass").value;
@@ -223,9 +271,7 @@
 
             if (email === SUPER_ADMIN || (userData && userData.role === 'admin')) {
                 localStorage.setItem("isAdmin", "true");
-                document.getElementById("authLockOverlay").style.display = "none";
-                document.getElementById("adminContent").style.display = "block";
-                loadApplications(); 
+                showPanel();
             } else {
                 errorEl.innerText = "Access Denied: Not an authorized admin.";
                 btn.innerText = "Verify & Unlock";
@@ -239,11 +285,18 @@
         }
     };
 
+    function showPanel() {
+        document.getElementById("authLockOverlay").style.display = "none";
+        document.getElementById("adminContent").style.display = "block";
+        document.getElementById("statsSidebar").style.display = "flex";
+        syncCounter();
+        loadApplications();
+    }
+
     document.getElementById("loginSubmitBtn").onclick = window.verifyAdmin;
 
     if (localStorage.getItem("isAdmin") === "true") {
-        document.getElementById("authLockOverlay").style.display = "none";
-        document.getElementById("adminContent").style.display = "block";
+        showPanel();
     }
 
     onValue(ref(db, 'settings/maintenanceMode'), (snapshot) => {
