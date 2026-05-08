@@ -1,334 +1,474 @@
-<!DOCTYPE html> 
-<html> 
-<head> 
-    <title>Star Choice - Admin Panel</title> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"> 
-    <style> 
-        html { opacity: 0; animation: fadeInPage 0.8s ease-in forwards; } 
-        @keyframes fadeInPage { from { opacity: 0; } to { opacity: 1; } } 
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Star Choice - Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        html { opacity: 0; animation: fadeInPage 0.8s ease-in forwards; }
+        @keyframes fadeInPage { from { opacity: 0; } to { opacity: 1; } }
 
-        body { margin: 0; font-family: 'Poppins', sans-serif; background: #0f172a; color: white; min-height: 100vh; overflow-x: hidden; } 
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: #0f172a; color: white; min-height: 100vh; overflow-x: hidden; }
         
-        body::before {  
-            content: ""; position: fixed; inset: 0;  
-            background: url('bg.png') center/cover no-repeat;  
-            z-index: -2; opacity: 0.4; transition: background 0.5s ease-in-out;  
-        } 
+        body::before { 
+            content: ""; position: fixed; inset: 0; 
+            background: url('bg.png') center/cover no-repeat; 
+            z-index: -2; opacity: 0.4; transition: background 0.5s ease-in-out; 
+        }
         
-        canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; } 
-        .container { max-width: 900px; margin: auto; padding: 40px 20px; position: relative; z-index: 1; } 
+        canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+        .container { max-width: 900px; margin: auto; padding: 40px 20px; position: relative; z-index: 1; }
         
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); } 
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
         
-        .settings-card { background: rgba(30, 41, 59, 0.9); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #22c55e; } 
-        .input-group { display: flex; gap: 10px; margin-top: 15px; } 
+        .settings-card { background: rgba(30, 41, 59, 0.9); padding: 25px; border-radius: 15px; margin-bottom: 30px; border: 1px solid #22c55e; }
+        .input-group { display: flex; gap: 10px; margin-top: 15px; }
+        input[type="text"], input[type="email"], input[type="password"], input[type="date"] { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; font-family: 'Poppins'; }
 
-        input[type="text"], input[type="email"], input[type="password"], input[type="date"] { flex: 1; padding: 12px; border-radius: 8px; border: 1px solid #334155; background: #1e293b; color: white; outline: none; font-family: 'Poppins'; } 
+        #authLockOverlay {
+            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); 
+            backdrop-filter: blur(15px); z-index: 20000; 
+            display: flex; justify-content: center; align-items: center;
+        }
 
-        #authLockOverlay { 
-            position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95);  
-            backdrop-filter: blur(15px); z-index: 20000;  
-            display: flex; justify-content: center; align-items: center; 
-        } 
+        .modal-overlay { 
+            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); 
+            z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px);
+        }
+        #userModal { z-index: 9000; }
 
-        .modal-overlay {  
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85);  
-            z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(5px); 
-        } 
-        #userModal { z-index: 9000; } 
+        .modal-box { 
+            background: #1e293b; padding: 30px; border-radius: 20px; text-align: center; 
+            border: 1px solid #22c55e; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto;
+            animation: popUp 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-        .modal-box {  
-            background: #1e293b; padding: 30px; border-radius: 20px; text-align: center;  
-            border: 1px solid #22c55e; width: 90%; max-width: 500px; max-height: 80vh; overflow-y: auto; 
-            animation: popUp 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55); 
-        } 
-        @keyframes popUp { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } } 
+        .btn-main { 
+            background: #22c55e; color: white; border: none; padding: 12px 20px; border-radius: 10px; 
+            cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px;
+            font-family: 'Poppins';
+        }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
 
-        .btn-main {  
-            background: #22c55e; color: white; border: none; padding: 12px 20px; border-radius: 10px;  
-            cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px; 
-            font-family: 'Poppins'; 
-        } 
-        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); } 
-
-        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); position: relative; text-align: left; } 
+        .app-card { background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px); position: relative; text-align: left; }
         
-        .email-list-item { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 14px; display: flex; justify-content: space-between; align-items: center; } 
+        .user-item-wrapper { position: relative; }
+        .email-list-item { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.05); text-align: left; font-size: 14px; display: flex; justify-content: space-between; align-items: center; }
         
-        .dropdown { position: absolute; right: 10px; top: 40px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; width: 180px; display: none; z-index: 9500; box-shadow: 0 10px 20px rgba(0,0,0,0.5); overflow: hidden; } 
+        .dropdown { position: absolute; right: 10px; top: 40px; background: #1e293b; border: 1px solid #334155; border-radius: 8px; width: 180px; display: none; z-index: 9500; box-shadow: 0 10px 20px rgba(0,0,0,0.5); overflow: hidden; }
+        .dropdown button { width: 100%; padding: 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; font-family: 'Poppins'; transition: 0.2s; }
+        .dropdown button:hover { background: rgba(255,255,255,0.1); }
+        .dropdown .btn-danger:hover { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
 
-        .dropdown button { width: 100%; padding: 12px; background: none; border: none; color: white; text-align: left; cursor: pointer; font-size: 13px; font-family: 'Poppins'; transition: 0.2s; } 
-        .dropdown button:hover { background: rgba(255,255,255,0.1); } 
+        .dots-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 20px; padding: 5px 10px; transition: 0.2s; border-radius: 5px; }
+        .dots-btn:hover { color: white; background: rgba(255,255,255,0.05); }
 
-        .dots-btn { background: none; border: none; color: #94a3b8; cursor: pointer; font-size: 20px; padding: 5px 10px; transition: 0.2s; border-radius: 5px; } 
+        .tab-btn-box { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-weight: 600; transition: 0.3s; }
+        .tab-btn.active { color: #22c55e; border-bottom: 2px solid #22c55e; }
 
-        .tab-btn-box { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #334155; padding-bottom: 10px; } 
-        .tab-btn { flex: 1; padding: 10px; border: none; background: transparent; color: #94a3b8; cursor: pointer; font-weight: 600; transition: 0.3s; } 
-        .tab-btn.active { color: #22c55e; border-bottom: 2px solid #22c55e; } 
-    </style> 
-</head> 
-<body> 
+        /* Date selector layout */
+        .date-input-container { display: flex; flex-direction: column; text-align: left; gap: 5px; margin-bottom: 15px; }
+        .date-input-container label { font-size: 12px; color: #94a3b8; margin-left: 5px; }
+    </style>
+</head>
+<body>
 
-<canvas id="snow"></canvas> 
+<canvas id="snow"></canvas>
 
-<div id="authLockOverlay"> 
-    <div class="modal-box" style="width: 350px;"> 
-        <div style="font-size: 40px; margin-bottom: 10px;">🔐</div> 
-        <h2 style="margin:0; color:white;">Admin Access</h2> 
-        <input type="email" id="loginEmail" placeholder="Admin Gmail" style="width:100%; margin-bottom:10px; box-sizing:border-box;"> 
-        <input type="password" id="loginPass" placeholder="Password" style="width:100%; margin-bottom:20px; box-sizing:border-box;"> 
-        <button id="loginSubmitBtn" class="btn-main" style="width:100%; justify-content:center;">Verify & Unlock</button> 
-        <p id="loginError" style="color:#ef4444; font-size:12px; margin-top:10px;"></p> 
-    </div> 
-</div> 
+<!-- Verification Lock Screen -->
+<div id="authLockOverlay">
+    <div class="modal-box" style="width: 350px;">
+        <div style="font-size: 40px; margin-bottom: 10px;">🔐</div>
+        <h2 style="margin:0; color:white;">Admin Access</h2>
+        <p style="color:#94a3b8; font-size:13px; margin-bottom:20px;">Please verify your identity to continue.</p>
+        
+        <input type="email" id="loginEmail" placeholder="Admin Gmail" style="width:100%; margin-bottom:10px; box-sizing:border-box;">
+        <input type="password" id="loginPass" placeholder="Password" style="width:100%; margin-bottom:20px; box-sizing:border-box;">
+        
+        <button id="loginSubmitBtn" class="btn-main" style="width:100%; justify-content:center;">Verify & Unlock</button>
+        <p id="loginError" style="color:#ef4444; font-size:12px; margin-top:10px;"></p>
+    </div>
+</div>
 
-<div id="customAlert" class="modal-overlay"> 
-    <div class="modal-box"> 
-        <h3 id="alertTitle" style="margin-top:0;">Notification</h3> 
-        <p id="alertMsg"></p> 
-        <div id="alertButtons" style="margin-top: 20px; display: flex; gap: 10px;"> 
-            <button class="btn-main" id="confirmBtn" style="flex: 1; justify-content: center;">OK</button> 
-            <button class="btn-main" id="cancelBtn" onclick="closeAlert()" style="flex: 1; justify-content: center; background: #64748b;">Cancel</button> 
-        </div> 
-    </div> 
-</div> 
+<div id="customAlert" class="modal-overlay">
+    <div class="modal-box">
+        <h3 id="alertTitle" style="margin-top:0;">Notification</h3>
+        <p id="alertMsg"></p>
+        <div id="alertButtons" style="margin-top: 20px; display: flex; gap: 10px;">
+            <button class="btn-main" id="confirmBtn" style="flex: 1; justify-content: center;">OK</button>
+            <button class="btn-main" id="cancelBtn" onclick="closeAlert()" style="flex: 1; justify-content: center; background: #64748b;">Cancel</button>
+        </div>
+    </div>
+</div>
 
-<div id="userModal" class="modal-overlay"> 
-    <div class="modal-box" style="max-width: 550px;"> 
-        <h3 style="margin-top:0; color: #22c55e;">📧 User Management</h3> 
-        <div class="tab-btn-box"> 
-            <button class="tab-btn active" id="tabAdmin" onclick="switchTab('admin')">Admins</button> 
-            <button class="tab-btn" id="tabUser" onclick="switchTab('user')">Users</button> 
-        </div> 
-        <div id="emailList" style="min-height: 200px;"></div> 
-        <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; justify-content: center; background: #ef4444;">Close Management</button> 
-    </div> 
-</div> 
+<!-- Export Date Filter Modal -->
+<div id="exportModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 400px; border-color: #3b82f6;">
+        <h3 style="margin-top:0; color: #3b82f6;">📊 Export Data</h3>
+        <p style="color: #94a3b8; font-size: 13px; margin-bottom: 20px;">Select date range for the JSON backup.</p>
+        
+        <div class="date-input-container">
+            <label>Start Date</label>
+            <input type="date" id="exportStartDate">
+        </div>
+        <div class="date-input-container">
+            <label>End Date</label>
+            <input type="date" id="exportEndDate">
+        </div>
 
-<div class="container"> 
-    <div id="adminContent" style="display: none;"> 
-        <div class="header"> 
-            <h2 style="margin:0;">Admin Control Center 🔐</h2> 
-            <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600;">Sign Out</button> 
-        </div> 
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button class="btn-main" id="processExportBtn" style="flex:1; justify-content: center; background: #3b82f6;">Download</button>
+            <button class="btn-main" onclick="document.getElementById('exportModal').style.display='none'" style="flex:1; justify-content: center; background: #64748b;">Cancel</button>
+        </div>
+    </div>
+</div>
 
-        <div class="settings-card" style="border-color: #3b82f6; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"> 
-            <div> 
-                <h3 style="margin:0;">System Status 🌐</h3> 
-                <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Current website availability:</p> 
-            </div> 
-            <div id="statusBadge" style="padding: 8px 18px; border-radius: 30px; font-weight: 600; font-size: 13px; background: #22c55e;">ONLINE</div> 
-        </div> 
+<div id="userModal" class="modal-overlay">
+    <div class="modal-box" style="max-width: 550px;">
+        <h3 style="margin-top:0; color: #22c55e;">📧 User Management</h3>
+        <div class="tab-btn-box">
+            <button class="tab-btn active" id="tabAdmin" onclick="switchTab('admin')">Admins</button>
+            <button class="tab-btn" id="tabUser" onclick="switchTab('user')">Users</button>
+        </div>
+        <div id="emailList" style="min-height: 200px;">
+            <p style="color: #94a3b8;">Fetching records...</p>
+        </div>
+        <button class="btn-main" onclick="document.getElementById('userModal').style.display='none'" style="margin-top: 20px; width: 100%; justify-content: center; background: #ef4444;">Close Management</button>
+    </div>
+</div>
 
-        <div class="settings-card"> 
-            <h3 style="margin:0;">Website Appearance 🖼️</h3> 
-            <div class="input-group"> 
-                <input type="text" id="bgUrlInput" placeholder="Paste image link here"> 
-                <button class="btn-main" onclick="updateBackground()">Update Theme</button> 
-            </div> 
-        </div> 
+<div class="container">
+    <div id="accessDenied" style="display: none; text-align: center; padding-top: 150px;">
+        <h1 style="font-size: 60px;">🚫</h1>
+        <h2>Access Denied</h2>
+        <button class="btn-main" onclick="window.location.href='index.html'">Return Home</button>
+    </div>
 
-        <!-- NEW: Date Range Selection for JSON Export -->
-        <div class="settings-card" style="border-color: #3b82f6;"> 
-            <h3 style="margin:0;">Export Data by Date 📊</h3> 
-            <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Select range to filter JSON backup:</p> 
-            <div class="input-group"> 
-                <input type="date" id="startDate" title="Start Date"> 
-                <input type="date" id="endDate" title="End Date"> 
-                <button class="btn-main" onclick="exportData()" style="background: #3b82f6;">📊 Export JSON</button> 
-            </div> 
-        </div> 
+    <div id="adminContent" style="display: none;">
+        <div class="header">
+            <h2 style="margin:0;">Admin Control Center 🔐</h2>
+            <button onclick="logout()" style="background:#ef4444; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:600;">Sign Out</button>
+        </div>
 
-        <div style="display: flex; gap: 15px; margin-bottom: 25px;"> 
-            <button class="btn-main" onclick="loadApplications()" style="flex:1; justify-content: center;">🔍 Sync Records</button> 
-            <button class="btn-main" onclick="openUserManager()" style="flex:1; justify-content: center;">📧 Manage Users</button> 
-            <button class="btn-main" onclick="toggleMaintenance()" style="flex:1; justify-content: center; background: #f59e0b;">🛠️ Toggle Maintenance</button> 
-        </div> 
+        <div class="settings-card" style="border-color: #3b82f6; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div>
+                <h3 style="margin:0;">System Status 🌐</h3>
+                <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Current website availability:</p>
+            </div>
+            <div id="statusBadge" style="padding: 8px 18px; border-radius: 30px; font-weight: 600; font-size: 13px; background: #22c55e; min-width: 100px; text-align: center; box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);">
+                ONLINE
+            </div>
+        </div>
 
-        <div id="applicationsList"></div> 
-    </div> 
-</div> 
+        <div class="settings-card">
+            <h3 style="margin:0;">Website Appearance 🖼️</h3>
+            <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Update global background via URL:</p>
+            <div class="input-group">
+                <input type="text" id="bgUrlInput" placeholder="Paste image link here">
+                <button class="btn-main" id="uploadBtn" onclick="updateBackground()">Update Theme</button>
+            </div>
+        </div>
 
-<script type="module"> 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js"; 
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js"; 
-    import { getDatabase, ref, onValue, set, get, update, remove } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js"; 
+        <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+            <button class="btn-main" id="fetchBtn" onclick="loadApplications()" style="flex:1; justify-content: center;">🔍 Sync Records</button>
+            <button class="btn-main" onclick="openUserManager()" style="flex:1; justify-content: center;">📧 Manage Users</button>
+        </div>
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU", 
-        authDomain: "star-choice-finserv.firebaseapp.com", 
-        projectId: "star-choice-finserv", 
-        storageBucket: "star-choice-finserv.firebasestorage.app", 
-        messagingSenderId: "724236316044", 
-        appId: "1:724236316044:web:f20c2a4466d8c22d117aa9", 
-        databaseURL: "https://star-choice-finserv-default-rtdb.firebaseio.com/" 
-    }; 
+        <div style="display: flex; gap: 15px; margin-bottom: 25px;">
+            <button class="btn-main" onclick="openExportModal()" style="flex:1; justify-content: center; background: #3b82f6;">📊 Export JSON</button>
+            <button class="btn-main" id="maintenanceBtn" onclick="toggleMaintenance()" style="flex:1; justify-content: center; background: #f59e0b;">🛠️ Toggle Maintenance</button>
+        </div>
 
-    const app = initializeApp(firebaseConfig); 
-    const db = getDatabase(app); 
-    const auth = getAuth(app); 
-    const SUPER_ADMIN = "arshshuklabpl@gmail.com"; 
+        <div id="applicationsList"></div>
+    </div>
+</div>
 
-    window.verifyAdmin = async () => { 
-        const email = document.getElementById("loginEmail").value.trim(); 
-        const pass = document.getElementById("loginPass").value; 
-        const errorEl = document.getElementById("loginError"); 
-        const btn = document.getElementById("loginSubmitBtn"); 
-        if(!email || !pass) { errorEl.innerText = "Fields cannot be empty!"; return; } 
-        btn.innerText = "Verifying..."; 
-        btn.disabled = true; 
-        try { 
-            const userCred = await signInWithEmailAndPassword(auth, email, pass); 
-            const user = userCred.user; 
-            const snapshot = await get(ref(db, `users/${user.uid}`)); 
-            const userData = snapshot.val(); 
-            if (email === SUPER_ADMIN || (userData && userData.role === 'admin')) { 
-                localStorage.setItem("isAdmin", "true"); 
-                document.getElementById("authLockOverlay").style.display = "none"; 
-                document.getElementById("adminContent").style.display = "block"; 
-                loadApplications();  
-            } else { 
-                errorEl.innerText = "Access Denied!"; 
-                btn.innerText = "Verify & Unlock"; 
-                btn.disabled = false; 
-                await auth.signOut(); 
-            } 
-        } catch (err) { 
-            errorEl.innerText = "Invalid Credentials!"; 
-            btn.innerText = "Verify & Unlock"; 
-            btn.disabled = false; 
-        } 
-    }; 
-    document.getElementById("loginSubmitBtn").onclick = window.verifyAdmin; 
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, set, get, update, remove } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
 
-    if (localStorage.getItem("isAdmin") === "true") { 
-        document.getElementById("authLockOverlay").style.display = "none"; 
-        document.getElementById("adminContent").style.display = "block"; 
-    } 
+    const firebaseConfig = {
+        apiKey: "AIzaSyAKBCIOqBUFjZWqPZ-5cTxNvD8XFqyhlKU",
+        authDomain: "star-choice-finserv.firebaseapp.com",
+        projectId: "star-choice-finserv",
+        storageBucket: "star-choice-finserv.firebasestorage.app",
+        messagingSenderId: "724236316044",
+        appId: "1:724236316044:web:f20c2a4466d8c22d117aa9",
+        databaseURL: "https://star-choice-finserv-default-rtdb.firebaseio.com/"
+    };
 
-    onValue(ref(db, 'settings/maintenanceMode'), (snapshot) => { 
-        const isM = snapshot.val() || false; 
-        const badge = document.getElementById("statusBadge"); 
-        badge.innerText = isM ? "MAINTENANCE" : "ONLINE"; 
-        badge.style.background = isM ? "#f59e0b" : "#22c55e"; 
-    }); 
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+    const SUPER_ADMIN = "arshshuklabpl@gmail.com";
 
-    window.exportData = async () => { 
-        const start = document.getElementById("startDate").value; 
-        const end = document.getElementById("endDate").value; 
+    window.verifyAdmin = async () => {
+        const email = document.getElementById("loginEmail").value.trim();
+        const pass = document.getElementById("loginPass").value;
+        const errorEl = document.getElementById("loginError");
+        const btn = document.getElementById("loginSubmitBtn");
 
-        if (!start || !end) { 
-            showAlert("Action Required", "Please select both From and To dates first.", "#f1c40f"); 
-            return; 
-        } 
+        if(!email || !pass) { errorEl.innerText = "Fields cannot be empty!"; return; }
+        btn.innerText = "Verifying...";
+        btn.disabled = true;
 
-        try { 
-            showAlert("Processing", "Filtering data for selected range...", "#3b82f6"); 
-            const snapshot = await get(ref(db, 'applications')); 
-            if (!snapshot.exists()) { showAlert("Error", "No data found.", "#ef4444"); return; } 
+        try {
+            const userCred = await signInWithEmailAndPassword(auth, email, pass);
+            const user = userCred.user;
+            const snapshot = await get(ref(db, `users/${user.uid}`));
+            const userData = snapshot.val();
+
+            if (email === SUPER_ADMIN || (userData && userData.role === 'admin')) {
+                localStorage.setItem("isAdmin", "true");
+                document.getElementById("authLockOverlay").style.display = "none";
+                document.getElementById("adminContent").style.display = "block";
+                loadApplications(); 
+            } else {
+                errorEl.innerText = "Access Denied: Not an authorized admin.";
+                btn.innerText = "Verify & Unlock";
+                btn.disabled = false;
+                await auth.signOut();
+            }
+        } catch (err) {
+            errorEl.innerText = "Invalid Gmail or Password!";
+            btn.innerText = "Verify & Unlock";
+            btn.disabled = false;
+        }
+    };
+
+    document.getElementById("loginSubmitBtn").onclick = window.verifyAdmin;
+
+    if (localStorage.getItem("isAdmin") === "true") {
+        document.getElementById("authLockOverlay").style.display = "none";
+        document.getElementById("adminContent").style.display = "block";
+    }
+
+    onValue(ref(db, 'settings/maintenanceMode'), (snapshot) => {
+        const isMaintenance = snapshot.val() || false;
+        const badge = document.getElementById("statusBadge");
+        if (isMaintenance) {
+            badge.innerText = "MAINTENANCE";
+            badge.style.background = "#f59e0b";
+            badge.style.boxShadow = "0 0 15px rgba(245, 158, 11, 0.4)";
+        } else {
+            badge.innerText = "ONLINE";
+            badge.style.background = "#22c55e";
+            badge.style.boxShadow = "0 0 15px rgba(34, 197, 94, 0.4)";
+        }
+    });
+
+    onValue(ref(db, 'settings/backgroundUrl'), (snapshot) => {
+        const url = snapshot.val();
+        if (url) {
+            let styleTag = document.getElementById('dynamic-bg') || document.createElement('style');
+            styleTag.id = 'dynamic-bg';
+            styleTag.innerHTML = `body::before { background-image: url('${url}') !important; }`;
+            document.head.appendChild(styleTag);
+        }
+    });
+
+    window.updateBackground = function() {
+        const url = document.getElementById("bgUrlInput").value.trim();
+        if(!url) { showAlert("Action Required", "Please provide a valid image URL.", "#f1c40f"); return; }
+        set(ref(db, 'settings/backgroundUrl'), url).then(() => {
+            showAlert("Theme Updated", "Background changed successfully.", "#22c55e");
+            document.getElementById("bgUrlInput").value = "";
+        });
+    };
+
+    window.toggleMaintenance = async () => {
+        const maintenanceRef = ref(db, 'settings/maintenanceMode');
+        const snapshot = await get(maintenanceRef);
+        const currentState = snapshot.val() || false;
+        showAlert("Maintenance Mode", `Do you want to ${currentState ? 'DISABLE' : 'ENABLE'} Maintenance Mode?`, "#f59e0b", true, () => {
+            set(maintenanceRef, !currentState).then(() => {
+                showAlert("Success", `Maintenance mode is now ${!currentState ? 'ON' : 'OFF'}.`, "#22c55e");
+            });
+        });
+    };
+
+    window.loadApplications = function() {
+        onValue(ref(db, 'applications'), (snapshot) => {
+            const data = snapshot.val();
+            const listDiv = document.getElementById("applicationsList");
+            listDiv.innerHTML = "";
+            if (!data) { listDiv.innerHTML = "<p>No records found.</p>"; return; }
+            Object.keys(data).reverse().forEach(id => {
+                const app = data[id];
+                listDiv.innerHTML += `<div class="app-card">
+                    <div class="detail"><b>Name:</b> ${app.name}</div>
+                    <div class="detail"><b>Phone:</b> ${app.phone}</div>
+                    <div class="detail"><b>Amount:</b> ₹${app.amount}</div>
+                    ${app.date ? `<div class="detail"><b>Date:</b> ${app.date}</div>` : ''}
+                </div>`;
+            });
+        });
+    };
+
+    // --- Export Logic with Date Filtering ---
+    window.openExportModal = () => {
+        document.getElementById('exportModal').style.display = 'flex';
+    };
+
+    window.processExport = async () => {
+        const startDate = document.getElementById('exportStartDate').value;
+        const endDate = document.getElementById('exportEndDate').value;
+
+        if(!startDate || !endDate) {
+            alert("Please select both dates.");
+            return;
+        }
+
+        try {
+            document.getElementById('exportModal').style.display = 'none';
+            showAlert("Processing", "Filtering data for selected range...", "#3b82f6");
             
-            const allData = snapshot.val(); 
-            const filteredData = {}; 
-            const startTime = new Date(start).getTime(); 
-            const endTime = new Date(end).setHours(23, 59, 59, 999); 
+            const snapshot = await get(ref(db, 'applications'));
+            if (!snapshot.exists()) { showAlert("Error", "No data found.", "#ef4444"); return; }
+            
+            const allData = snapshot.val();
+            const filteredData = {};
 
-            Object.keys(allData).forEach(id => { 
-                const app = allData[id]; 
-                if (app.timestamp) { 
-                    const appTime = new Date(app.timestamp).getTime(); 
-                    if (appTime >= startTime && appTime <= endTime) { 
-                        filteredData[id] = app; 
-                    } 
-                } 
-            }); 
+            Object.keys(allData).forEach(id => {
+                const entry = allData[id];
+                if (entry.date) {
+                    if (entry.date >= startDate && entry.date <= endDate) {
+                        filteredData[id] = entry;
+                    }
+                }
+            });
 
-            if (Object.keys(filteredData).length === 0) { 
-                showAlert("Empty", "No records found in this date range.", "#f59e0b"); 
-                return; 
-            } 
+            const count = Object.keys(filteredData).length;
+            if (count === 0) {
+                showAlert("Empty Result", "No records found in this date range.", "#f59e0b");
+                return;
+            }
 
-            const blob = new Blob([JSON.stringify(filteredData, null, 4)], { type: "application/json" }); 
-            const url = URL.createObjectURL(blob); 
-            const link = document.createElement("a"); 
-            link.href = url; 
-            link.download = `StarChoice_Backup_${start}_to_${end}.json`; 
-            link.click(); 
-            showAlert("Success", "Filtered JSON saved.", "#22c55e"); 
-        } catch (e) { showAlert("Error", e.message, "#ef4444"); } 
-    }; 
+            const blob = new Blob([JSON.stringify(filteredData, null, 4)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `Star_Choice_Backup_${startDate}_to_${endDate}.json`;
+            link.click();
+            showAlert("Export Complete", `${count} records exported successfully.`, "#22c55e");
+        } catch (e) { showAlert("Error", e.message, "#ef4444"); }
+    };
 
-    window.loadApplications = function() { 
-        onValue(ref(db, 'applications'), (snapshot) => { 
-            const data = snapshot.val(); 
-            const listDiv = document.getElementById("applicationsList"); 
-            listDiv.innerHTML = ""; 
-            if (!data) { listDiv.innerHTML = "<p>No records found.</p>"; return; } 
-            Object.keys(data).reverse().forEach(id => { 
-                const app = data[id]; 
-                listDiv.innerHTML += `<div class="app-card"><b>Name:</b> ${app.name} | <b>Phone:</b> ${app.phone} | <b>Amount:</b> ₹${app.amount}</div>`; 
-            }); 
-        }); 
-    }; 
+    document.getElementById('processExportBtn').onclick = window.processExport;
 
-    window.updateBackground = () => { 
-        const url = document.getElementById("bgUrlInput").value.trim(); 
-        if(url) set(ref(db, 'settings/backgroundUrl'), url); 
-    }; 
+    window.openUserManager = () => { document.getElementById('userModal').style.display = 'flex'; switchTab('admin'); };
 
-    window.toggleMaintenance = async () => { 
-        const snapshot = await get(ref(db, 'settings/maintenanceMode')); 
-        const current = snapshot.val() || false; 
-        showAlert("Maintenance", `Turn ${current ? 'OFF' : 'ON'}?`, "#f59e0b", true, () => { 
-            set(ref(db, 'settings/maintenanceMode'), !current); 
-        }); 
-    }; 
+    window.switchTab = async (type) => {
+        const listDiv = document.getElementById('emailList');
+        document.getElementById('tabAdmin').className = type === 'admin' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tabUser').className = type === 'user' ? 'tab-btn active' : 'tab-btn';
+        listDiv.innerHTML = "<p>Loading...</p>";
+        const snapshot = await get(ref(db, 'users'));
+        const users = snapshot.exists() ? snapshot.val() : {};
+        listDiv.innerHTML = "";
+        if(type === 'admin') {
+            listDiv.innerHTML = `<div class="email-list-item" style="background: rgba(241, 196, 15, 0.1); border-radius:8px; margin-bottom:5px;"><span>👑 ${SUPER_ADMIN} (Owner)</span></div>`;
+        }
+        Object.keys(users).forEach(uid => {
+            const u = users[uid];
+            if(u.email === SUPER_ADMIN) return;
+            const isAdmin = u.role === 'admin';
+            const isBanned = u.role === 'banned';
+            if((type === 'admin' && isAdmin) || (type === 'user' && !isAdmin)) {
+                listDiv.innerHTML += `
+                    <div class="user-item-wrapper">
+                        <div class="email-list-item">
+                            <span>${isAdmin ? '⭐' : '👤'} ${u.email} ${isBanned ? '<b style="color:#ef4444;">(BANNED)</b>' : ''}</span>
+                            <button class="dots-btn" onclick="toggleDropdown('${uid}')">⋮</button>
+                        </div>
+                        <div id="drop-${uid}" class="dropdown">
+                            ${isAdmin ? `<button onclick="demoteUser('${uid}', '${u.email}')">⬇️ Demote</button>` : `<button onclick="promoteUser('${uid}', '${u.email}')">⬆️ Promote</button>`}
+                            <button class="btn-danger" onclick="banUser('${uid}', '${u.email}', ${isBanned})">${isBanned ? '✅ Unban' : '🚫 Ban'}</button>
+                            <button class="btn-danger" onclick="removeUser('${uid}', '${u.email}')">🗑️ Remove</button>
+                        </div>
+                    </div>`;
+            }
+        });
+    };
 
-    window.showAlert = (title, msg, color, isConfirm = false, onConfirm = null) => { 
-        document.getElementById("alertTitle").innerText = title; 
-        document.getElementById("alertTitle").style.color = color; 
-        document.getElementById("alertMsg").innerText = msg; 
-        document.getElementById("cancelBtn").style.display = isConfirm ? "block" : "none"; 
-        document.getElementById("confirmBtn").onclick = () => { closeAlert(); if(onConfirm) onConfirm(); }; 
-        document.getElementById("customAlert").style.display = "flex"; 
-    }; 
+    window.toggleDropdown = (uid) => {
+        const all = document.querySelectorAll('.dropdown');
+        all.forEach(d => { if(d.id !== `drop-${uid}`) d.style.display = 'none'; });
+        const el = document.getElementById(`drop-${uid}`);
+        el.style.display = el.style.display === 'block' ? 'none' : 'block';
+    };
 
-    window.closeAlert = () => { document.getElementById("customAlert").style.display = "none"; }; 
-    window.logout = () => { localStorage.removeItem("isAdmin"); auth.signOut(); window.location.href = "index.html"; }; 
-    window.openUserManager = () => { document.getElementById('userModal').style.display = 'flex'; switchTab('admin'); }; 
+    window.promoteUser = (uid, email) => {
+        showAlert("Confirm Promotion", `Make ${email} Admin?`, "#22c55e", true, () => {
+            update(ref(db, `users/${uid}`), { role: 'admin' }).then(() => { switchTab('user'); });
+        });
+    };
 
-    window.switchTab = async (type) => { 
-        const listDiv = document.getElementById('emailList'); 
-        listDiv.innerHTML = "Loading..."; 
-        const snapshot = await get(ref(db, 'users')); 
-        const users = snapshot.val() || {}; 
-        listDiv.innerHTML = ""; 
-        Object.keys(users).forEach(uid => { 
-            const u = users[uid]; 
-            if ((type==='admin' && u.role==='admin') || (type==='user' && u.role!=='admin')) { 
-                listDiv.innerHTML += `<div class="email-list-item"><span>${u.email}</span></div>`; 
-            } 
-        }); 
-    }; 
-</script> 
+    window.demoteUser = (uid, email) => {
+        showAlert("Confirm Demotion", `Remove Admin rights?`, "#f1c40f", true, () => {
+            update(ref(db, `users/${uid}`), { role: 'user' }).then(() => { switchTab('admin'); });
+        });
+    };
 
-<script> 
-    const canvas = document.getElementById("snow"); 
-    const ctx = canvas.getContext("2d"); 
-    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; } 
-    resize(); 
-    let snowflakes = []; 
-    for(let i=0;i<80;i++){ snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, d: Math.random()*1 }); } 
-    function drawSnow(){ 
-        ctx.clearRect(0,0,canvas.width,canvas.height); 
-        ctx.fillStyle = "white"; 
-        ctx.beginPath(); 
-        for(let f of snowflakes){ ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true); } 
-        ctx.fill(); 
-        for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height) f.y = 0; } 
-    } 
-    setInterval(drawSnow, 30); 
-    window.onresize = resize; 
-</script> 
-</body> 
+    window.removeUser = (uid, email) => {
+        showAlert("Confirm Removal", `Delete ${email}?`, "#ef4444", true, () => {
+            remove(ref(db, `users/${uid}`)).then(() => { 
+                const currentTab = document.getElementById('tabAdmin').classList.contains('active') ? 'admin' : 'user';
+                switchTab(currentTab); 
+            });
+        });
+    };
+
+    window.banUser = (uid, email, isBanned) => {
+        const newRole = isBanned ? "user" : "banned";
+        showAlert(`Confirm Action`, `${isBanned ? 'Unban' : 'Ban'} ${email}?`, "#ef4444", true, () => {
+            update(ref(db, `users/${uid}`), { role: newRole }).then(() => { 
+                const currentTab = document.getElementById('tabAdmin').classList.contains('active') ? 'admin' : 'user';
+                switchTab(currentTab); 
+            });
+        });
+    };
+
+    window.showAlert = (title, msg, color, isConfirm = false, onConfirm = null) => {
+        document.getElementById("alertTitle").innerText = title;
+        document.getElementById("alertTitle").style.color = color;
+        document.getElementById("alertMsg").innerText = msg;
+        document.getElementById("cancelBtn").style.display = isConfirm ? "block" : "none";
+        document.getElementById("confirmBtn").onclick = () => { closeAlert(); if(onConfirm) onConfirm(); };
+        document.getElementById("customAlert").style.display = "flex";
+    };
+
+    window.closeAlert = () => { document.getElementById("customAlert").style.display = "none"; };
+    window.logout = () => { localStorage.removeItem("isAdmin"); auth.signOut(); window.location.href = "index.html"; };
+    
+    document.addEventListener('click', (e) => {
+        if (!e.target.matches('.dots-btn')) {
+            document.querySelectorAll('.dropdown').forEach(d => d.style.display = 'none');
+        }
+    });
+
+</script>
+
+<script>
+    const canvas = document.getElementById("snow");
+    const ctx = canvas.getContext("2d");
+    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    let snowflakes = [];
+    for(let i=0;i<80;i++){ snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, d: Math.random()*1 }); }
+    function drawSnow(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        for(let f of snowflakes){ ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true); }
+        ctx.fill();
+        for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; } }
+    }
+    setInterval(drawSnow, 30);
+    window.onresize = resize;
+</script>
+</body>
 </html>
