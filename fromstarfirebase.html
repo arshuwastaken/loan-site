@@ -1,1 +1,150 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Star Choice - Firebase Leads</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        html { opacity: 0; animation: fadeInPage 0.8s ease-in forwards; }
+        @keyframes fadeInPage { from { opacity: 0; } to { opacity: 1; } }
 
+        body { margin: 0; font-family: 'Poppins', sans-serif; background: #0f172a; color: white; min-height: 100vh; overflow-x: hidden; }
+        
+        body::before { 
+            content: ""; position: fixed; inset: 0; 
+            background: url('bg.png') center/cover no-repeat; 
+            z-index: -2; opacity: 0.4;
+        }
+        
+        canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
+        .container { max-width: 1000px; margin: auto; padding: 40px 20px; position: relative; z-index: 1; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; background: rgba(30, 41, 59, 0.7); padding: 20px; border-radius: 15px; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); }
+        
+        .btn-main { 
+            background: #22c55e; color: white; border: none; padding: 12px 20px; border-radius: 10px; 
+            cursor: pointer; font-weight: 600; transition: 0.3s; display: inline-flex; align-items: center; gap: 10px;
+            text-decoration: none; font-size: 14px;
+        }
+        .btn-main:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4); }
+        .btn-back { background: #64748b; }
+
+        .lead-card { 
+            background: rgba(30, 41, 59, 0.8); padding: 20px; border-radius: 15px; margin-bottom: 15px; 
+            border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(5px);
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;
+        }
+        
+        .detail b { color: #22c55e; font-size: 12px; text-transform: uppercase; display: block; }
+        .detail span { font-size: 15px; }
+
+        .loader { text-align: center; padding: 50px; display: none; }
+        .status-msg { text-align: center; color: #94a3b8; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+<canvas id="snow"></canvas>
+
+<div class="container">
+    <div class="header">
+        <div>
+            <h2 style="margin:0;">Star Leads Database 🚀</h2>
+            <p style="margin:5px 0 0; font-size:12px; color:#94a3b8;">Fetching real-time data from Star Firebase</p>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <button class="btn-main" onclick="fetchStarLeads()">🔄 Refresh Today</button>
+            <a href="admin.html" class="btn-main btn-back">⬅️ Back</a>
+        </div>
+    </div>
+
+    <div id="loader" class="loader">
+        <div style="font-size: 40px; animation: spin 2s linear infinite;">⏳</div>
+        <p>Connecting to Star Firebase...</p>
+    </div>
+
+    <div id="leadsList">
+        <div class="status-msg">Click 'Refresh Today' to load data.</div>
+    </div>
+</div>
+
+<script>
+    async function fetchStarLeads() {
+        const leadsList = document.getElementById("leadsList");
+        const loader = document.getElementById("loader");
+        
+        leadsList.innerHTML = "";
+        loader.style.display = "block";
+
+        // Aaj ki date DD/MM/YYYY format mein
+        const now = new Date();
+        const dd = String(now.getDate()).padStart(2, '0');
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const yyyy = now.getFullYear();
+        const today = `${dd}/${mm}/${yyyy}`;
+
+        // Firebase Optimized URL
+        const firebaseUrl = `https://star-leads-backup-a7974-default-rtdb.asia-southeast1.firebasedatabase.app/star_leads.json?orderBy="12"&equalTo="${today}"`;
+
+        try {
+            const response = await fetch(firebaseUrl);
+            const data = await response.json();
+
+            loader.style.display = "none";
+
+            if (!data || Object.keys(data).length === 0) {
+                leadsList.innerHTML = `<div class="status-msg">ℹ️ Aaj ka koi data (${today}) nahi mila.</div>`;
+                return;
+            }
+
+            // Data ko loop karke UI mein dikhana
+            Object.keys(data).reverse().forEach(key => {
+                const row = data[key];
+                if (Array.isArray(row)) {
+                    const card = document.createElement("div");
+                    card.className = "lead-card";
+                    
+                    // Row structure mapping (C to N)
+                    card.innerHTML = `
+                        <div class="detail"><b>Customer Name</b><span>${row[0] || 'N/A'}</span></div>
+                        <div class="detail"><b>Father Name</b><span>${row[1] || 'N/A'}</span></div>
+                        <div class="detail"><b>City</b><span>${row[2] || 'N/A'}</span></div>
+                        <div class="detail"><b>Mobile</b><span>${row[5] || 'N/A'}</span></div>
+                        <div class="detail"><b>Loan Amount</b><span>${row[8] || 'N/A'}</span></div>
+                        <div class="detail"><b>Status</b><span>${row[11] || 'Pending'}</span></div>
+                    `;
+                    leadsList.appendChild(card);
+                }
+            });
+
+        } catch (error) {
+            loader.style.display = "none";
+            leadsList.innerHTML = `<div class="status-msg" style="color:#ef4444;">❌ Error: ${error.message}</div>`;
+        }
+    }
+
+    // Snow Effect Script
+    const canvas = document.getElementById("snow");
+    const ctx = canvas.getContext("2d");
+    function resize(){ canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+    resize();
+    let snowflakes = [];
+    for(let i=0;i<80;i++){ snowflakes.push({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, r: Math.random()*2+1, d: Math.random()*1 }); }
+    function drawSnow(){
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        for(let f of snowflakes){ ctx.moveTo(f.x,f.y); ctx.arc(f.x,f.y,f.r,0,Math.PI*2,true); }
+        ctx.fill();
+        for(let f of snowflakes){ f.y += f.d; if(f.y > canvas.height){ f.y = 0; f.x = Math.random()*canvas.width; } }
+    }
+    setInterval(drawSnow, 30);
+    window.onresize = resize;
+</script>
+
+<style>
+    @keyframes spin { 100% { transform:rotate(360deg); } }
+</style>
+
+</body>
+</html>
