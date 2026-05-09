@@ -19,7 +19,6 @@
         canvas { position: fixed; inset: 0; z-index: -1; pointer-events: none; }
         .container { max-width: 1000px; margin: auto; padding: 40px 20px; position: relative; z-index: 1; }
         
-        /* Updated Header Style */
         .header { 
             display: flex; justify-content: space-between; align-items: center; 
             margin-bottom: 30px; background: rgba(30, 41, 59, 0.7); 
@@ -92,6 +91,7 @@
         const yyyy = now.getFullYear();
         const today = `${dd}/${mm}/${yyyy}`;
 
+        // Updated API filtering for index 12 (Date)
         const firebaseUrl = `https://star-leads-backup-a7974-default-rtdb.asia-southeast1.firebasedatabase.app/star_leads.json?orderBy="12"&equalTo="${today}"`;
 
         try {
@@ -111,15 +111,14 @@
                     const card = document.createElement("div");
                     card.className = "lead-card";
                     
-                    // Sahi Mapping based on image:
-                    // row[0]=ID, row[3]=SourceBy, row[5]=City, row[6]=CustomerName, row[7]=Mobile, row[11]=LoanAmt, row[12]=Date
+                    // CORRECTED MAPPING BASED ON PROVIDED IMAGES:
                     card.innerHTML = `
-                        <div class="detail"><b>Lead ID</b><span>#${row[0] || '---'}</span></div>
                         <div class="detail"><b>Customer Name</b><span>${row[6] || 'N/A'}</span></div>
                         <div class="detail"><b>Caller Name (Source)</b><span>${row[3] || 'N/A'}</span></div>
                         <div class="detail"><b>City</b><span>${row[5] || 'N/A'}</span></div>
                         <div class="detail"><b>Mobile No</b><span>${row[7] || 'N/A'}</span></div>
-                        <div class="detail"><b>Loan Amount</b><span>₹${row[11] || '0.00'} L</span></div>
+                        <div class="detail"><b>Calling Bank</b><span>${row[9] || 'N/A'}</span></div>
+                        <div class="detail"><b>Loan Amount</b><span>₹${row[12] || '0.00'} L</span></div>
                     `;
                     leadsList.appendChild(card);
                 }
