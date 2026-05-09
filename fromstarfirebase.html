@@ -6,15 +6,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
 
     <style>
-        html {
-            opacity: 0;
-            animation: fadeInPage 0.8s ease-in forwards;
-        }
-
-        @keyframes fadeInPage {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+        html { opacity: 0; animation: fadeInPage 0.8s ease-in forwards; }
+        @keyframes fadeInPage { from { opacity: 0; } to { opacity: 1; } }
 
         body {
             margin: 0;
@@ -42,7 +35,7 @@
         }
 
         .container {
-            max-width: 1000px;
+            max-width: 1100px;
             margin: auto;
             padding: 40px 20px;
             position: relative;
@@ -83,14 +76,8 @@
             box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
         }
 
-        .btn-back {
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(5px);
-        }
-
-        .btn-back:hover {
-            background: rgba(255,255,255,0.25);
-        }
+        .btn-back { background: rgba(255,255,255,0.15); backdrop-filter: blur(5px); }
+        .btn-back:hover { background: rgba(255,255,255,0.25); }
 
         .lead-card {
             background: rgba(30, 41, 59, 0.8);
@@ -100,15 +87,12 @@
             border: 1px solid rgba(255,255,255,0.1);
             backdrop-filter: blur(10px);
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
             transition: 0.3s;
         }
 
-        .lead-card:hover {
-            border-color: #22c55e;
-            transform: scale(1.01);
-        }
+        .lead-card:hover { border-color: #22c55e; transform: scale(1.01); }
 
         .detail b {
             color: #22c55e;
@@ -119,30 +103,12 @@
             margin-bottom: 4px;
         }
 
-        .detail span {
-            font-size: 15px;
-            font-weight: 500;
-            color: #f8fafc;
-        }
+        .detail span { font-size: 15px; font-weight: 500; color: #f8fafc; }
 
-        .loader {
-            text-align: center;
-            padding: 50px;
-            display: none;
-        }
-
-        .status-msg {
-            text-align: center;
-            color: #94a3b8;
-            margin-top: 20px;
-            font-size: 14px;
-        }
-
-        @keyframes spin {
-            100% {
-                transform: rotate(360deg);
-            }
-        }
+        .loader { text-align: center; padding: 50px; display: none; }
+        .status-msg { text-align: center; color: #94a3b8; margin-top: 20px; font-size: 14px; }
+        
+        @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
 
@@ -151,49 +117,30 @@
 <canvas id="snow"></canvas>
 
 <div class="container">
-
     <div class="header">
         <div>
-            <h2 style="margin:0; font-size:24px; letter-spacing:-0.5px;">
-                Star Leads Database 🚀
-            </h2>
-
-            <p style="margin:5px 0 0; font-size:13px; color:#94a3b8; opacity:0.8;">
-                Fetching real-time data from Star Firebase
-            </p>
+            <h2 style="margin:0; font-size:24px; letter-spacing:-0.5px;">Star Leads Database 🚀</h2>
+            <p style="margin:5px 0 0; font-size:13px; color:#94a3b8; opacity:0.8;">Fetching real-time data from Star Firebase</p>
         </div>
 
         <div style="display:flex; gap:12px;">
-            <button class="btn-main" onclick="fetchStarLeads()">
-                🔄 Refresh Today
-            </button>
-
-            <a href="admin.html" class="btn-main btn-back">
-                ⬅️ Back
-            </a>
+            <button class="btn-main" onclick="fetchStarLeads()">🔄 Refresh Today</button>
+            <a href="admin.html" class="btn-main btn-back">⬅️ Back</a>
         </div>
     </div>
 
     <div id="loader" class="loader">
         <div style="font-size:40px; animation:spin 2s linear infinite;">⏳</div>
-
-        <p style="margin-top:15px; color:#94a3b8;">
-            Connecting to Star Firebase...
-        </p>
+        <p style="margin-top:15px; color:#94a3b8;">Connecting to Star Firebase...</p>
     </div>
 
     <div id="leadsList">
-        <div class="status-msg">
-            Click 'Refresh Today' to load recent entries.
-        </div>
+        <div class="status-msg">Click 'Refresh Today' to load recent entries.</div>
     </div>
-
 </div>
 
 <script>
-
 async function fetchStarLeads() {
-
     const leadsList = document.getElementById("leadsList");
     const loader = document.getElementById("loader");
 
@@ -201,155 +148,88 @@ async function fetchStarLeads() {
     loader.style.display = "block";
 
     const now = new Date();
-
     const dd = String(now.getDate()).padStart(2, '0');
     const mm = String(now.getMonth() + 1).padStart(2, '0');
     const yyyy = now.getFullYear();
-
     const today = `${dd}/${mm}/${yyyy}`;
 
-    const firebaseUrl =
-    `https://star-leads-backup-a7974-default-rtdb.asia-southeast1.firebasedatabase.app/star_leads.json?orderBy="12"&equalTo="${today}"`;
+    const firebaseUrl = `https://star-leads-backup-a7974-default-rtdb.asia-southeast1.firebasedatabase.app/star_leads.json?orderBy="12"&equalTo="${today}"`;
 
     try {
-
         const response = await fetch(firebaseUrl);
         const data = await response.json();
-
         loader.style.display = "none";
 
         if (!data || Object.keys(data).length === 0) {
-
-            leadsList.innerHTML = `
-                <div class="status-msg">
-                    ℹ️ Aaj ka koi data (${today}) nahi mila.
-                </div>
-            `;
-
+            leadsList.innerHTML = `<div class="status-msg">ℹ️ Aaj ka koi data (${today}) nahi mila.</div>`;
             return;
         }
 
         Object.keys(data).reverse().forEach(key => {
-
             const row = data[key];
-
             if (Array.isArray(row)) {
-
                 const card = document.createElement("div");
                 card.className = "lead-card";
 
-                // FIXED DETAILS ONLY
+                // FINAL CORRECTED MAPPING:
                 card.innerHTML = `
                     <div class="detail">
                         <b>Customer Name</b>
-                        <span>${row[0] || 'N/A'}</span>
+                        <span>${row[10] || 'N/A'}</span>
                     </div>
-
                     <div class="detail">
                         <b>Caller Name (Source)</b>
-                        <span>${row[1] || 'N/A'}</span>
-                    </div>
-
-                    <div class="detail">
-                        <b>City</b>
                         <span>${row[2] || 'N/A'}</span>
                     </div>
-
+                    <div class="detail">
+                        <b>City</b>
+                        <span>${row[4] || 'N/A'}</span>
+                    </div>
                     <div class="detail">
                         <b>Mobile No</b>
                         <span>${row[3] || 'N/A'}</span>
                     </div>
-
                     <div class="detail">
                         <b>Calling Bank</b>
-                        <span>${row[4] || 'N/A'}</span>
+                        <span>${row[5] || 'N/A'}</span>
                     </div>
-
                     <div class="detail">
                         <b>Loan Amount</b>
-                        <span>₹${row[5] || '0.00'} L</span>
+                        <span>₹${row[8] || '0.00'} L</span>
                     </div>
-
                     <div class="detail">
                         <b>Date</b>
                         <span>${row[12] || 'N/A'}</span>
                     </div>
                 `;
-
                 leadsList.appendChild(card);
             }
         });
-
-    }
-
-    catch(error) {
-
+    } catch(error) {
         loader.style.display = "none";
-
-        leadsList.innerHTML = `
-            <div class="status-msg" style="color:#ef4444;">
-                ❌ Fetch Error: ${error.message}
-            </div>
-        `;
+        leadsList.innerHTML = `<div class="status-msg" style="color:#ef4444;">❌ Fetch Error: ${error.message}</div>`;
     }
 }
 
-// Snow Effect
-
+// Snow Effect logic
 const canvas = document.getElementById("snow");
 const ctx = canvas.getContext("2d");
-
-function resize() {
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-}
-
+function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 resize();
-
 let snowflakes = [];
-
 for(let i = 0; i < 80; i++) {
-
-    snowflakes.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 2 + 1,
-        d: Math.random() * 1
-    });
+    snowflakes.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 1 });
 }
-
 function drawSnow() {
-
     ctx.clearRect(0,0,canvas.width,canvas.height);
-
     ctx.fillStyle = "white";
     ctx.beginPath();
-
-    for(let f of snowflakes) {
-
-        ctx.moveTo(f.x, f.y);
-        ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true);
-    }
-
+    for(let f of snowflakes) { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true); }
     ctx.fill();
-
-    for(let f of snowflakes) {
-
-        f.y += f.d;
-
-        if(f.y > canvas.height) {
-
-            f.y = 0;
-            f.x = Math.random() * canvas.width;
-        }
-    }
+    for(let f of snowflakes) { f.y += f.d; if(f.y > canvas.height) { f.y = 0; f.x = Math.random() * canvas.width; } }
 }
-
 setInterval(drawSnow, 30);
-
 window.onresize = resize;
-
 </script>
 
 </body>
