@@ -181,6 +181,11 @@
             <button class="btn-main" id="maintenanceBtn" onclick="toggleMaintenance()" style="flex:1; justify-content: center; background: #f59e0b;">🛠️ Toggle Maintenance</button>
         </div>
 
+        <!-- NEW BUTTON ADDED HERE -->
+        <div style="margin-bottom: 25px;">
+            <button class="btn-main" onclick="window.location.href='fromstarfirebase.html'" style="width: 100%; justify-content: center; background: #8b5cf6;">🚀 Data From Star Firebase</button>
+        </div>
+
         <div id="applicationsList"></div>
     </div>
 </div>
@@ -308,7 +313,6 @@
         });
     };
 
-    // --- Export Logic with Date Filtering ---
     window.openExportModal = () => {
         document.getElementById('exportModal').style.display = 'flex';
     };
