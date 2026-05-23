@@ -140,6 +140,65 @@
         .loader { text-align: center; padding: 50px; display: none; }
         .status-msg { text-align: center; color: #94a3b8; margin-top: 20px; font-size: 14px; }
         
+        /* Modern Custom Modal Pop-up */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .custom-modal {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        .modal-overlay.active .custom-modal {
+            transform: scale(1);
+        }
+        .modal-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+        .modal-text {
+            font-size: 15px;
+            color: #e2e8f0;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+        .btn-modal-close {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-family: 'Poppins', sans-serif;
+            transition: 0.2s;
+        }
+        .btn-modal-close:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
         @keyframes spin { 100% { transform: rotate(360deg); } }
     </style>
 </head>
@@ -147,6 +206,15 @@
 <body>
 
 <canvas id="snow"></canvas>
+
+<!-- Custom Modal Overlay Container -->
+<div id="customModalOverlay" class="modal-overlay">
+    <div class="custom-modal">
+        <div id="modalIcon" class="modal-icon">⚠️</div>
+        <div id="modalMessage" class="modal-text">Please select a valid date first!</div>
+        <button class="btn-modal-close" onclick="closeModal()">OK</button>
+    </div>
+</div>
 
 <div class="container">
     <div class="header">
@@ -156,7 +224,6 @@
         </div>
 
         <div class="action-area">
-            <!-- New Custom Date Input Section -->
             <input type="date" id="customDateInput" class="date-picker">
             <button class="btn-main btn-blue" onclick="fetchStarLeads(true)">📅 Fetch Date wise</button>
             
@@ -176,6 +243,17 @@
 </div>
 
 <script>
+// Custom Modal Logic Functions
+function showModal(message, icon = "⚠️") {
+    document.getElementById("modalMessage").innerText = message;
+    document.getElementById("modalIcon").innerText = icon;
+    document.getElementById("customModalOverlay").classList.add("active");
+}
+
+function closeModal() {
+    document.getElementById("customModalOverlay").classList.remove("active");
+}
+
 async function fetchStarLeads(isCustomDate = false) {
     const leadsList = document.getElementById("leadsList");
     const loader = document.getElementById("loader");
@@ -184,10 +262,9 @@ async function fetchStarLeads(isCustomDate = false) {
     if (isCustomDate) {
         const dateInput = document.getElementById("customDateInput").value;
         if (!dateInput) {
-            alert("Kripya pehle ek valid date select karein!");
+            showModal("Please select a valid date first!", "⚠️");
             return;
         }
-        // Converts YYYY-MM-DD from input to DD/MM/YYYY for Firebase
         const [yyyy, mm, dd] = dateInput.split("-");
         targetDate = `${dd}/${mm}/${yyyy}`;
     } else {
@@ -209,7 +286,8 @@ async function fetchStarLeads(isCustomDate = false) {
         loader.style.display = "none";
 
         if (!data || Object.keys(data).length === 0) {
-            leadsList.innerHTML = `<div class="status-msg">ℹ️ Koi data (${targetDate}) nahi mila.</div>`;
+            leadsList.innerHTML = `<div class="status-msg">ℹ️ No records found for ${targetDate}.</div>`;
+            showModal(`No data records available for ${targetDate}.`, "ℹ️");
             return;
         }
 
@@ -219,7 +297,6 @@ async function fetchStarLeads(isCustomDate = false) {
                 const card = document.createElement("div");
                 card.className = "lead-card";
 
-                // YOUR EXACT CUSTOM HEADER STRUCTURE UNTOUCHED:
                 card.innerHTML = `
                     <div class="detail">
                         <b>Customer Name</b>
