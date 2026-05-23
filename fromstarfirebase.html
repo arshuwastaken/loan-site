@@ -53,6 +53,31 @@
             backdrop-filter: blur(15px);
             border: 1px solid rgba(255,255,255,0.1);
             box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .action-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .date-picker {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 14px;
+            border-radius: 12px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: 0.3s;
+        }
+        .date-picker:focus {
+            border-color: #22c55e;
+            box-shadow: 0 0 10px rgba(34, 197, 94, 0.2);
         }
 
         .btn-main {
@@ -74,6 +99,13 @@
         .btn-main:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(34, 197, 94, 0.4);
+        }
+
+        .btn-blue {
+            background: #3b82f6;
+        }
+        .btn-blue:hover {
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.4);
         }
 
         .btn-back { background: rgba(255,255,255,0.15); backdrop-filter: blur(5px); }
@@ -123,8 +155,12 @@
             <p style="margin:5px 0 0; font-size:13px; color:#94a3b8; opacity:0.8;">Fetching real-time data from Star Firebase</p>
         </div>
 
-        <div style="display:flex; gap:12px;">
-            <button class="btn-main" onclick="fetchStarLeads()">🔄 Refresh Today</button>
+        <div class="action-area">
+            <!-- New Custom Date Input Section -->
+            <input type="date" id="customDateInput" class="date-picker">
+            <button class="btn-main btn-blue" onclick="fetchStarLeads(true)">📅 Fetch Date wise</button>
+            
+            <button class="btn-main" onclick="fetchStarLeads(false)">🔄 Refresh Today</button>
             <a href="admin.html" class="btn-main btn-back">⬅️ Back</a>
         </div>
     </div>
@@ -135,25 +171,37 @@
     </div>
 
     <div id="leadsList">
-        <div class="status-msg">Click 'Refresh Today' to load recent entries.</div>
+        <div class="status-msg">Click 'Refresh Today' or choose a custom date to load entries.</div>
     </div>
 </div>
 
 <script>
-async function fetchStarLeads() {
+async function fetchStarLeads(isCustomDate = false) {
     const leadsList = document.getElementById("leadsList");
     const loader = document.getElementById("loader");
+    let targetDate = "";
+
+    if (isCustomDate) {
+        const dateInput = document.getElementById("customDateInput").value;
+        if (!dateInput) {
+            alert("Kripya pehle ek valid date select karein!");
+            return;
+        }
+        // Converts YYYY-MM-DD from input to DD/MM/YYYY for Firebase
+        const [yyyy, mm, dd] = dateInput.split("-");
+        targetDate = `${dd}/${mm}/${yyyy}`;
+    } else {
+        const now = new Date();
+        const dd = String(now.getDate()).padStart(2, '0');
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const yyyy = now.getFullYear();
+        targetDate = `${dd}/${mm}/${yyyy}`;
+    }
 
     leadsList.innerHTML = "";
     loader.style.display = "block";
 
-    const now = new Date();
-    const dd = String(now.getDate()).padStart(2, '0');
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const yyyy = now.getFullYear();
-    const today = `${dd}/${mm}/${yyyy}`;
-
-    const firebaseUrl = `https://star-leads-backup-a7974-default-rtdb.asia-southeast1.firebasedatabase.app/star_leads.json?orderBy="12"&equalTo="${today}"`;
+    const firebaseUrl = `https://star-leads-backup-a7974-default-rtdb.asia-southeast1.firebasedatabase.app/star_leads.json?orderBy="12"&equalTo="${targetDate}"`;
 
     try {
         const response = await fetch(firebaseUrl);
@@ -161,7 +209,7 @@ async function fetchStarLeads() {
         loader.style.display = "none";
 
         if (!data || Object.keys(data).length === 0) {
-            leadsList.innerHTML = `<div class="status-msg">ℹ️ Aaj ka koi data (${today}) nahi mila.</div>`;
+            leadsList.innerHTML = `<div class="status-msg">ℹ️ Koi data (${targetDate}) nahi mila.</div>`;
             return;
         }
 
@@ -171,7 +219,7 @@ async function fetchStarLeads() {
                 const card = document.createElement("div");
                 card.className = "lead-card";
 
-                // FINAL CORRECTED MAPPING:
+                // YOUR EXACT CUSTOM HEADER STRUCTURE UNTOUCHED:
                 card.innerHTML = `
                     <div class="detail">
                         <b>Customer Name</b>
