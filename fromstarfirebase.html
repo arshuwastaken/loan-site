@@ -130,9 +130,10 @@
             overflow: hidden;
         }
 
+        /* 6 columns: Lead ID | Date | Source By Star | Mob. | City | Customer Name */
         .table-header-row {
             display: grid;
-            grid-template-columns: 100px 110px 140px 140px 120px 1fr;
+            grid-template-columns: 90px 110px 160px 140px 140px 1fr;
             padding: 15px 20px;
             background: rgba(15, 23, 42, 0.5);
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -150,21 +151,25 @@
 
         .lead-main-row {
             display: grid;
-            grid-template-columns: 100px 110px 140px 140px 120px 1fr;
+            grid-template-columns: 90px 110px 160px 140px 140px 1fr;
             padding: 16px 20px;
             align-items: center;
             cursor: pointer;
             font-size: 14px;
         }
 
-        .customer-name { font-weight: 600; color: #f8fafc; }
-        .expand-icon { margin-left: auto; color: #64748b; transition: transform 0.3s; font-size: 12px; }
+        .lead-main-row:hover {
+            background: rgba(255,255,255,0.03);
+        }
+
+        .customer-name { font-weight: 600; color: #f8fafc; display: flex; align-items: center; justify-content: space-between; }
+        .expand-icon { color: #64748b; transition: transform 0.3s; font-size: 12px; }
         .lead-row-container.active .expand-icon { transform: rotate(180deg); color: #22c55e; }
 
         .lead-details-panel {
             max-height: 0;
             overflow: hidden;
-            transition: max-height 0.3s ease-out;
+            transition: max-height 0.35s ease-out;
             background: rgba(15, 23, 42, 0.3);
         }
 
@@ -181,7 +186,7 @@
 
         .loader { text-align: center; padding: 50px; display: none; }
         .status-msg { text-align: center; color: #94a3b8; padding: 30px; font-size: 14px; }
-        
+
         .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(8px); z-index: 999; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.3s; }
         .modal-overlay.active { opacity: 1; pointer-events: all; }
         .custom-modal { background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(255, 255, 255, 0.15); padding: 30px; border-radius: 20px; width: 90%; max-width: 450px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
@@ -238,7 +243,7 @@
         </div>
         <div id="leadsList"></div>
     </div>
-    
+
     <div id="initialMsg" class="status-msg">Click 'Refresh Today' or choose a custom date to load entries.</div>
 </div>
 
@@ -267,24 +272,20 @@ function toggleRow(container) {
 function filterLeads() {
     const input = document.getElementById('searchInput').value.toLowerCase();
     const rows = document.querySelectorAll('.lead-row-container');
-
     rows.forEach(row => {
         const leadID = row.getAttribute('data-id').toLowerCase();
         const customerName = row.getAttribute('data-name').toLowerCase();
-
-        if (leadID.includes(input) || customerName.includes(input)) {
-            row.style.display = "";
-        } else {
-            row.style.display = "none";
-        }
+        row.style.display = (leadID.includes(input) || customerName.includes(input)) ? "" : "none";
     });
 }
 
+// Generate a numeric-only Lead ID from the Firebase key
 function generateLeadID(key) {
     let hash = 0;
-    for (let i = 0; i < key.length; i++) { hash = key.charCodeAt(i) + ((hash << 5) - hash); }
-    const idNum = Math.abs(hash % 9000) + 1000;
-    return `ST-2026-${idNum}`;
+    for (let i = 0; i < key.length; i++) {
+        hash = key.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return String(Math.abs(hash % 90000) + 10000); // 5-digit numeric ID
 }
 
 async function fetchStarLeads(isCustomDate = false) {
@@ -318,8 +319,7 @@ async function fetchStarLeads(isCustomDate = false) {
 
     try {
         const response = await fetch(firebaseUrl);
-        
-        // FIXED: Verify response content type before forcing json parsing
+
         const contentType = response.headers.get("content-type");
         if (!contentType || !contentType.includes("application/json")) {
             const rawText = await response.text();
@@ -341,47 +341,78 @@ async function fetchStarLeads(isCustomDate = false) {
 
         Object.keys(data).reverse().forEach(key => {
             const row = data[key];
-            if (Array.isArray(row)) {
-                const rowContainer = document.createElement("div");
-                rowContainer.className = "lead-row-container";
-                
-                const generatedId = generateLeadID(key);
-                const custName = row[10] || 'N/A';
+            if (!Array.isArray(row)) return;
 
-                rowContainer.setAttribute('data-id', generatedId);
-                rowContainer.setAttribute('data-name', custName);
+            /*
+             * Confirmed index mapping from live data:
+             * row[0]  = (unused / index 0)
+             * row[1]  = (unused / index 1)
+             * row[2]  = Source By Star  (e.g. "MP")
+             * row[3]  = City            (e.g. "NASRULLAGANJ")
+             * row[4]  = Banker Name     (e.g. "ARVIND SHARMA")
+             * row[5]  = Mobile          (e.g. "7049090759")
+             * row[6]  = Car Details     (e.g. "BT Topup")
+             * row[7]  = Calling Bank    (e.g. "IDFC Bank")
+             * row[8]  = Loan Amount     (e.g. "45240 SWIFT VXI")
+             * row[9]  = Remarks         (e.g. "MP04ZQ7684")
+             * row[10] = Customer Name   (e.g. "N/A")
+             * row[11] = Source          (e.g. "call back")
+             * row[12] = Date            (e.g. "23/05/2026")
+             * row[13] = Product         (e.g. "N/A")
+             * row[14] = RC No.          (e.g. "N/A")
+             */
 
-                rowContainer.innerHTML = `
-                    <div class="lead-main-row" onclick="toggleRow(this.parentElement)">
-                        <div style="color: #3b82f6; font-weight:600;">${generatedId}</div>
-                        <div>${row[12] || 'N/A'}</div>
-                        <div>${row[2] || 'N/A'}</div>
-                        <div>${row[5] || 'N/A'}</div>
-                        <div>${row[3] || 'N/A'}</div>
-                        <div class="customer-name">${custName} <span class="expand-icon">▼</span></div>
+            const generatedId = generateLeadID(key);
+            const custName    = row[10] || 'N/A';
+            const date        = row[12] || 'N/A';
+            const sourceByStr = row[2]  || 'N/A';
+            const mobile      = row[5]  || 'N/A';
+            const city        = row[3]  || 'N/A';
+            const source      = row[11] || 'N/A';
+            const carDetails  = row[6]  || 'N/A';
+            const callingBank = row[7]  || 'N/A';
+            const loanAmt     = row[8]  || '0.00';
+            const remarks     = row[9]  || 'N/A';
+            const bankerName  = row[4]  || 'N/A';
+            const product     = row[13] || 'N/A';
+            const rcNo        = row[14] || 'N/A';
+
+            const rowContainer = document.createElement("div");
+            rowContainer.className = "lead-row-container";
+            rowContainer.setAttribute('data-id', generatedId);
+            rowContainer.setAttribute('data-name', custName);
+
+            rowContainer.innerHTML = `
+                <div class="lead-main-row" onclick="toggleRow(this.parentElement)">
+                    <div style="color: #3b82f6; font-weight:600;">${generatedId}</div>
+                    <div>${date}</div>
+                    <div>${sourceByStr}</div>
+                    <div>${mobile}</div>
+                    <div>${city}</div>
+                    <div class="customer-name">${custName} <span class="expand-icon">▼</span></div>
+                </div>
+                <div class="lead-details-panel">
+                    <div class="details-grid">
+                        <div class="detail-item"><b>Lead ID</b><span>${generatedId}</span></div>
+                        <div class="detail-item"><b>Date</b><span>${date}</span></div>
+                        <div class="detail-item"><b>Source</b><span>${source}</span></div>
+                        <div class="detail-item"><b>Source By Star</b><span>${sourceByStr}</span></div>
+                        <div class="detail-item"><b>City</b><span>${city}</span></div>
+                        <div class="detail-item"><b>Customer Name</b><span>${custName}</span></div>
+                        <div class="detail-item"><b>Mob.</b><span>${mobile}</span></div>
+                        <div class="detail-item"><b>Product</b><span>${product}</span></div>
+                        <div class="detail-item"><b>Calling Bank</b><span>${callingBank}</span></div>
+                        <div class="detail-item"><b>Car Details</b><span>${carDetails}</span></div>
+                        <div class="detail-item"><b>RC No.</b><span>${rcNo}</span></div>
+                        <div class="detail-item"><b>Loan AMT</b><span>₹${loanAmt} L</span></div>
+                        <div class="detail-item"><b>Remarks</b><span>${remarks}</span></div>
+                        <div class="detail-item"><b>Banker Name</b><span>${bankerName}</span></div>
                     </div>
-                    <div class="lead-details-panel">
-                        <div class="details-grid">
-                            <div class="detail-item"><b>Lead ID</b><span>${generatedId}</span></div>
-                            <div class="detail-item"><b>Date</b><span>${row[12] || 'N/A'}</span></div>
-                            <div class="detail-item"><b>Source</b><span>${row[11] || 'N/A'}</span></div>
-                            <div class="detail-item"><b>Source By Star</b><span>${row[2] || 'N/A'}</span></div>
-                            <div class="detail-item"><b>City</b><span>${row[3] || 'N/A'}</span></div>
-                            <div class="detail-item"><b>Customer Name</b><span>${custName}</span></div>
-                            <div class="detail-item"><b>Mob.</b><span>${row[5] || 'N/A'}</span></div>
-                            <div class="detail-item"><b>Product</b><span>${row[13] || 'N/A'}</span></div>
-                            <div class="detail-item"><b>Calling Bank</b><span>${row[6] || 'N/A'}</span></div>
-                            <div class="detail-item"><b>Car Details</b><span>${row[7] || 'N/A'}</span></div>
-                            <div class="detail-item"><b>RC No.</b><span>${row[4] || 'N/A'}</span></div>
-                            <div class="detail-item"><b>Loan AMT</b><span>₹${row[8] || '0.00'} L</span></div>
-                            <div class="detail-item"><b>Remarks</b><span>${row[9] || 'N/A'}</span></div>
-                            <div class="detail-item"><b>Banker Name</b><span>${row[14] || 'N/A'}</span></div>
-                        </div>
-                    </div>
-                `;
-                leadsList.appendChild(rowContainer);
-            }
+                </div>
+            `;
+            leadsList.appendChild(rowContainer);
         });
+
     } catch(error) {
         loader.style.display = "none";
         initialMsg.style.display = "block";
@@ -390,18 +421,22 @@ async function fetchStarLeads(isCustomDate = false) {
     }
 }
 
-// Snow Effect logic
+// Snow Effect
 const canvas = document.getElementById("snow");
 const ctx = canvas.getContext("2d");
 function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
 resize();
 let snowflakes = [];
-for(let i = 0; i < 80; i++) { snowflakes.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 1 }); }
+for (let i = 0; i < 80; i++) {
+    snowflakes.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 2 + 1, d: Math.random() * 1 });
+}
 function drawSnow() {
-    ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle = "white"; ctx.beginPath();
-    for(let f of snowflakes) { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true); }
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "white";
+    ctx.beginPath();
+    for (let f of snowflakes) { ctx.moveTo(f.x, f.y); ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2, true); }
     ctx.fill();
-    for(let f of snowflakes) { f.y += f.d; if(f.y > canvas.height) { f.y = 0; f.x = Math.random() * canvas.width; } }
+    for (let f of snowflakes) { f.y += f.d; if (f.y > canvas.height) { f.y = 0; f.x = Math.random() * canvas.width; } }
 }
 setInterval(drawSnow, 30);
 window.onresize = resize;
