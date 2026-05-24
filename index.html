@@ -76,12 +76,12 @@
     <h2 id="formTitle">Login Access 🚀</h2>
     
     <div class="input-group">
-        <label>Gmail Address</label>
-        <input type="email" id="email" placeholder="aapka-naam@gmail.com">
+        <label id="emailLabel">Enter Your Email Here</label>
+        <input type="email" id="email" placeholder="example@gmail.com">
     </div>
     
     <div class="input-group">
-        <label>Secret Password</label>
+        <label id="passLabel">Enter Password</label>
         <input type="password" id="password" placeholder="••••••••">
     </div>
 
@@ -130,6 +130,10 @@
         isLoginMode = !isLoginMode;
         document.getElementById('formTitle').innerText = isLoginMode ? "Login Access 🚀" : "Create Account 🚀";
         document.getElementById('mainBtn').innerText = isLoginMode ? "🚀 Authenticate" : "🚀 Register Me";
+        
+        // Update Labels for Password based on mode
+        document.getElementById('passLabel').innerText = isLoginMode ? "Enter Password" : "Create Password";
+        
         document.getElementById('togglePara').innerHTML = isLoginMode ? 
             'New User? <span onclick="toggleForm()">Create your ID</span>' : 
             'Have an ID? <span onclick="toggleForm()">Login instead</span>';
@@ -155,11 +159,10 @@
                     showAlert("Verify Gmail", "Bhai pehle apni Gmail check karo aur link verify karo! 📧", "#f1c40f");
                 }
             } else {
-                // SIGNUP (Database Save Logic Added Here)
+                // SIGNUP
                 const userCred = await createUserWithEmailAndPassword(auth, email, password);
                 const user = userCred.user;
 
-                // [NEW] Save user email to Realtime Database
                 await set(ref(db, 'users/' + user.uid), {
                     email: email,
                     uid: user.uid,
