@@ -130,7 +130,6 @@
             overflow: hidden;
         }
 
-        /* 6 columns: Lead ID | Date | Source By Star | Mob. | City | Customer Name */
         .table-header-row {
             display: grid;
             grid-template-columns: 90px 110px 160px 140px 140px 1fr;
@@ -158,8 +157,14 @@
             font-size: 14px;
         }
 
-        .lead-main-row:hover {
-            background: rgba(255,255,255,0.03);
+        .lead-main-row:hover { background: rgba(255,255,255,0.03); }
+
+        /* Mobile Masking CSS */
+        .blurred-num {
+            filter: blur(4px);
+            user-select: none;
+            color: #94a3b8;
+            transition: 0.3s;
         }
 
         .customer-name { font-weight: 600; color: #f8fafc; display: flex; align-items: center; justify-content: space-between; }
@@ -183,6 +188,7 @@
 
         .detail-item b { color: #94a3b8; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px; }
         .detail-item span { color: #e2e8f0; font-weight: 500; }
+        .detail-item.highlight span { color: #22c55e; font-size: 16px; letter-spacing: 1px; }
 
         .loader { text-align: center; padding: 50px; display: none; }
         .status-msg { text-align: center; color: #94a3b8; padding: 30px; font-size: 14px; }
@@ -259,10 +265,12 @@ function closeModal() { document.getElementById("customModalOverlay").classList.
 function toggleRow(container) {
     const panel = container.querySelector('.lead-details-panel');
     const isActive = container.classList.contains('active');
+    
     document.querySelectorAll('.lead-row-container').forEach(row => {
         row.classList.remove('active');
         row.querySelector('.lead-details-panel').style.maxHeight = null;
     });
+
     if (!isActive) {
         container.classList.add('active');
         panel.style.maxHeight = panel.scrollHeight + "px";
@@ -279,13 +287,18 @@ function filterLeads() {
     });
 }
 
-// Generate a numeric-only Lead ID from the Firebase key
 function generateLeadID(key) {
     let hash = 0;
     for (let i = 0; i < key.length; i++) {
         hash = key.charCodeAt(i) + ((hash << 5) - hash);
     }
-    return String(Math.abs(hash % 90000) + 10000); // 5-digit numeric ID
+    return String(Math.abs(hash % 90000) + 10000); 
+}
+
+// Function to mask mobile number (Ex: 70490XXXXX)
+function maskMobile(mobile) {
+    if(!mobile || mobile === 'N/A') return 'N/A';
+    return mobile.toString().substring(0, 5) + "XXXXX";
 }
 
 async function fetchStarLeads(isCustomDate = false) {
@@ -319,13 +332,6 @@ async function fetchStarLeads(isCustomDate = false) {
 
     try {
         const response = await fetch(firebaseUrl);
-
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-            const rawText = await response.text();
-            throw new Error(`Expected JSON but received HTML/Text. Server says: ${rawText.substring(0, 100)}...`);
-        }
-
         const data = await response.json();
         loader.style.display = "none";
 
@@ -343,30 +349,12 @@ async function fetchStarLeads(isCustomDate = false) {
             const row = data[key];
             if (!Array.isArray(row)) return;
 
-            /*
-             * Confirmed index mapping from live data:
-             * row[0]  = (unused / index 0)
-             * row[1]  = (unused / index 1)
-             * row[2]  = Source By Star  (e.g. "MP")
-             * row[3]  = City            (e.g. "NASRULLAGANJ")
-             * row[4]  = Banker Name     (e.g. "ARVIND SHARMA")
-             * row[5]  = Mobile          (e.g. "7049090759")
-             * row[6]  = Car Details     (e.g. "BT Topup")
-             * row[7]  = Calling Bank    (e.g. "IDFC Bank")
-             * row[8]  = Loan Amount     (e.g. "45240 SWIFT VXI")
-             * row[9]  = Remarks         (e.g. "MP04ZQ7684")
-             * row[10] = Customer Name   (e.g. "N/A")
-             * row[11] = Source          (e.g. "call back")
-             * row[12] = Date            (e.g. "23/05/2026")
-             * row[13] = Product         (e.g. "N/A")
-             * row[14] = RC No.          (e.g. "N/A")
-             */
-
             const generatedId = generateLeadID(key);
             const custName    = row[10] || 'N/A';
             const date        = row[12] || 'N/A';
             const sourceByStr = row[2]  || 'N/A';
             const mobile      = row[5]  || 'N/A';
+            const maskedMob   = maskMobile(mobile); // Blurred version
             const city        = row[3]  || 'N/A';
             const source      = row[11] || 'N/A';
             const carDetails  = row[6]  || 'N/A';
@@ -387,7 +375,7 @@ async function fetchStarLeads(isCustomDate = false) {
                     <div style="color: #3b82f6; font-weight:600;">${generatedId}</div>
                     <div>${date}</div>
                     <div>${sourceByStr}</div>
-                    <div>${mobile}</div>
+                    <div class="blurred-num">${maskedMob}</div>
                     <div>${city}</div>
                     <div class="customer-name">${custName} <span class="expand-icon">▼</span></div>
                 </div>
@@ -399,7 +387,7 @@ async function fetchStarLeads(isCustomDate = false) {
                         <div class="detail-item"><b>Source By Star</b><span>${sourceByStr}</span></div>
                         <div class="detail-item"><b>City</b><span>${city}</span></div>
                         <div class="detail-item"><b>Customer Name</b><span>${custName}</span></div>
-                        <div class="detail-item"><b>Mob.</b><span>${mobile}</span></div>
+                        <div class="detail-item highlight"><b>Full Mobile Number</b><span>${mobile}</span></div>
                         <div class="detail-item"><b>Product</b><span>${product}</span></div>
                         <div class="detail-item"><b>Calling Bank</b><span>${callingBank}</span></div>
                         <div class="detail-item"><b>Car Details</b><span>${carDetails}</span></div>
@@ -421,7 +409,7 @@ async function fetchStarLeads(isCustomDate = false) {
     }
 }
 
-// Snow Effect
+// Snow Effect logic
 const canvas = document.getElementById("snow");
 const ctx = canvas.getContext("2d");
 function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
