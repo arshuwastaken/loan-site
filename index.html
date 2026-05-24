@@ -81,7 +81,7 @@
     </div>
     
     <div class="input-group">
-        <label id="passLabel">Enter Password</label>
+        <label id="passwordLabel">Enter Password</label>
         <input type="password" id="password" placeholder="••••••••">
     </div>
 
@@ -131,8 +131,8 @@
         document.getElementById('formTitle').innerText = isLoginMode ? "Login Access 🚀" : "Create Account 🚀";
         document.getElementById('mainBtn').innerText = isLoginMode ? "🚀 Authenticate" : "🚀 Register Me";
         
-        // Update Labels for Password based on mode
-        document.getElementById('passLabel').innerText = isLoginMode ? "Enter Password" : "Create Password";
+        // Changing labels based on mode
+        document.getElementById('passwordLabel').innerText = isLoginMode ? "Enter Password" : "Create Password";
         
         document.getElementById('togglePara').innerHTML = isLoginMode ? 
             'New User? <span onclick="toggleForm()">Create your ID</span>' : 
